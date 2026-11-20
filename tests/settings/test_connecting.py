@@ -50,7 +50,7 @@ class Server:
     def __init__(self, path: Path, scripts: list[Script]) -> None:
         """Listen at `path`, the connections answered by `scripts` in turn."""
         self.path = str(path)
-        self.listener = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        self.listener = socket.socket(getattr(socket, "AF_UNIX"), socket.SOCK_STREAM)  # noqa: B009  # Not on Windows.
         self.listener.bind(self.path)
         self.listener.listen()
         self.scripts = scripts
