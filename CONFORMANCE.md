@@ -35,8 +35,8 @@ Contents: [Frames and fields](#frames-and-fields) ·
 | Compressed frame `z`: kind, length, a zlib stream, inflated within the length bound | `[PROTOCOL Compressed frames]` | not yet |
 | A `z` within a `z`, one that inflates to another length, or one not granted fails the connection | `[PROTOCOL Compressed frames]` | not yet |
 | The client's own compression threshold | `[PROTOCOL Compressed frames]` | not yet |
-| Fields `u8`, `u32`, `u64`, `i128`, flag, string, bytes, list, strings, key | `[PROTOCOL Values and fields]` | not yet |
-| A count larger than what follows fails as the body runs out, reserving nothing | `[PROTOCOL Values and fields]` | not yet |
+| Fields `u8`, `u32`, `u64`, `i128`, flag, string, bytes, list, strings, key | `[PROTOCOL Values and fields]` | done |
+| A count larger than what follows fails as the body runs out, reserving nothing | `[PROTOCOL Values and fields]` | done |
 | Composite fields: row, column, parameter, failure | `[PROTOCOL Composite fields]` | not yet |
 
 ## Data types

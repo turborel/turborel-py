@@ -42,6 +42,7 @@ decisions covering your area. What the driver implements is in
 | D7 | Every failure is one of PEP 249's exceptions, carrying its condition |
 | D9 | The driver's version is the turborel release it is made for |
 | D12 | One private package for each layer, as turborel-client has one module |
+| D14 | The codec keeps turborel-protocol's bounds, and refuses what it does |
 | **Tooling and process** | |
 | D4 | Automation in Python, on the standard library |
 | D5 | The build backend is uv_build |
@@ -143,6 +144,28 @@ reviewer checks one against the other:
 
 The public interface is `turborel` and `turborel.aio` alone (D2). Each
 package is added as its milestone begins; `_codec` is the first.
+
+#### D14. The codec keeps turborel-protocol's bounds, and refuses what it does
+
+The codec reads what turborel-protocol reads, and refuses what it
+refuses, each failure a connection failure (SQLCODE -919, SQLSTATE
+08006). Its bounds are turborel-protocol's: arrays, rows, multisets and
+structured values, as values and as types, nest at most 16 deep
+(`MAX_TYPE_NESTING`); a multiset holds at most 65 535 elements, and an
+array type's maximum cardinality is 1 to 65 535; a row type has a field;
+a plug-in's type has at most two parameters; a message carries at most
+32 attributes, each name 1 to 64 bytes and each value at most 1024; a
+JSON document nests at most 128 deep. Where turborel-protocol reads a
+value tag the page does not list, 5, 7, 10 and 12, the codec reads it as
+turborel-protocol does; 18 and 19, which it reads as the server's stored
+form of a large object, never sent, the codec refuses.
+
+What a program sends is checked before a byte is written, by the same
+bounds, so the server never has to refuse it: a number its field cannot
+hold is a `DataError` (SQLSTATE 22003), a value of no type the protocol
+carries a `ProgrammingError` (07006), parts nested past the bound a
+`NotSupportedError` (0A000), and an argument of a request out of its
+field's range an `InterfaceError` (turborel's TB910).
 
 ### Tooling and process
 
