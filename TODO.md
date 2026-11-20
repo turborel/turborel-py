@@ -19,23 +19,7 @@ Code never cites this file (R-DOC-5).
 
 ## M1 Codec
 
-Every message encoded and decoded, with no I/O, each with its codec
-tests.
-
-- Frames, fields and compression: the P-FRAME, P-ZFRAME and P-FIELD
-  rows.
-- The data types and values, tested at their edges: the P-TYPE, P-VAL
-  and P-JSON rows but P-VAL-102 and P-VAL-103, and the P-COMP rows.
-- The tail: the P-TAIL rows.
-- The messages whose rows are their fields alone: P-HELLO-1,
-  P-ANSWER-1, P-QUERY-1, P-EXEC-1, P-COPYIN-1, P-COPYDATA-1, P-CHAL-1,
-  P-READY-1, P-PREPD-1, P-DESCR-1, P-ROWS-1, P-SUSP-1, P-COMPL-1,
-  P-ERROR-1, P-NOTICE-1, P-STATUS-1, P-PONG-1, and the P-LOBR rows. The
-  other requests' fields are encoded here too, and their rows, which say
-  how the server answers, are done in the milestone that names them.
-- The worked example, byte for byte, and malformed frames that must fail
-  the connection: the P-EXAMPLE rows and P-ERRN-6.
-- The manual: Appendix A and the API Reference's page of values.
+Nothing is open: every row M1 names is done.
 
 ## M2 Connect
 

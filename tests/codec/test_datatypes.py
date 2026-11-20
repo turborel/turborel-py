@@ -243,3 +243,13 @@ def test_types_nest_at_most_16_deep() -> None:
     assert isinstance(read(sixteen), ArrayType)
     with pytest.raises(OperationalError):
         read(bytes([16]) + u32(1) + sixteen)
+
+
+def test_a_distinct_type_comes_as_its_source_type() -> None:
+    """Verifies: [PROTOCOL Data types] a distinct type is written as its source type.
+
+    It has no tag of its own: a column of a distinct type over CHARACTER
+    VARYING(4) reads as CHARACTER VARYING(4), byte for byte its source's.
+    """
+    source = bytes([5]) + u32(4) + bytes([0])
+    assert read(source) == CharacterType(varying=True, length=4, octets=False)

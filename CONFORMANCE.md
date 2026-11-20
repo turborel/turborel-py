@@ -141,7 +141,7 @@ From `doc/client/05-protocol.md`, The Native Protocol.
 | P-TYPE-25 | 25 JSON: nothing | `[PROTOCOL Data types]` | done |
 | P-TYPE-26 | 26 XML: primary modifier `u8` (DOCUMENT, CONTENT, SEQUENCE), secondary `u8` (UNTYPED, ANY, XMLSCHEMA); of XMLSCHEMA, the schema's schema and name, its namespace and its element | `[PROTOCOL Data types]` | done |
 | P-TYPE-27 | 27 UUID: nothing (gap G1) | `[PROTOCOL Data types]` | done |
-| P-TYPE-100 | A distinct type written as its source type | `[PROTOCOL Data types]` | not yet |
+| P-TYPE-100 | A distinct type written as its source type | `[PROTOCOL Data types]` | done |
 | P-TYPE-101 | A plug-in's type the client does not have read by its name, its values shown by their text | `[PROTOCOL Data types]` | done |
 
 ### Values

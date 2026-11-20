@@ -79,9 +79,10 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-# Tests assert, and state their fixtures as literals (R-TEST-4, R-CONST-5).
-# Their folders are not packages: pytest imports them by path.
-"tests/**" = ["S101", "PLR2004", "INP001"]
+# Tests assert, and state their fixtures as literals (R-TEST-4, R-CONST-5);
+# their case generators are seeded, for repeatable cases, not secrets
+# (R-TEST-5). Their folders are not packages: pytest imports them by path.
+"tests/**" = ["S101", "PLR2004", "INP001", "S311"]
 # The checks' runner reports to its user and runs the tools it names.
 "tools/**" = ["T201", "S603"]
 
