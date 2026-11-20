@@ -16,7 +16,8 @@ from turborel._transport.timeouts import Timeouts
 if TYPE_CHECKING:
     import ssl
 
-    from turborel._auth.mechanisms import Mechanism
+    from turborel._auth.mechanisms import Mechanism, TlsChannel
+    from turborel._transport.stream import Stream
     from turborel._transport.target import Target
 
 INVALID_AUTHORIZATION: Final = "28000"
@@ -71,12 +72,29 @@ def connect_to(
     within = timeouts or Timeouts()
     if isinstance(target, Tcp):
         in_the_clear(mechanism)
-    stream, channel = open_target(target, within.connect)
+    opened = open_target(target, within.connect)
+    return logged_in(target, opened, (user, mechanism), within, offer or Offer())
+
+
+def logged_in(
+    target: Target,
+    opened: tuple[Stream, TlsChannel | None],
+    who: tuple[str, Mechanism],
+    within: Timeouts,
+    offer: Offer,
+) -> Connection:
+    """A connection over the stream `opened` to `target`, `who` logged in.
+
+    Raises:
+        Error: As the server refuses the login, or the connection fails.
+    """
+    stream, channel = opened
+    user, mechanism = who
     if channel is not None:
         mechanism.bind(channel)
     stream.set_timeout(within.connect)
     connection = Connection(stream, target, bounded=True)
-    connection._log_in(user, mechanism, offer or Offer())  # noqa: SLF001  # Its maker.
+    connection._log_in(user, mechanism, offer)  # noqa: SLF001  # Its maker.
     connection.set_read_timeout(within.read)
     return connection
 
