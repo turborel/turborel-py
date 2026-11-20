@@ -183,20 +183,20 @@ cited under the page's section on values.
 
 | ID | Row | Citation | Status |
 |---|---|---|---|
-| P-JSON-0 | Node 0 null | `[PROTOCOL Values]` | not yet |
-| P-JSON-1 | Node 1 false | `[PROTOCOL Values]` | not yet |
-| P-JSON-2 | Node 2 true | `[PROTOCOL Values]` | not yet |
-| P-JSON-3 | Node 3 integer: `i64` | `[PROTOCOL Values]` | not yet |
-| P-JSON-4 | Node 4 decimal: units `i64`, scale `u8` | `[PROTOCOL Values]` | not yet |
-| P-JSON-5 | Node 5 wide decimal: units `i128`, scale `u32` | `[PROTOCOL Values]` | not yet |
-| P-JSON-6 | Node 6 decimal floating point: coefficient `i128`, exponent `i32` | `[PROTOCOL Values]` | not yet |
-| P-JSON-7 | Node 7 approximate: `f64` bits | `[PROTOCOL Values]` | not yet |
-| P-JSON-8 | Node 8 string: octets `u32`, UTF-8 | `[PROTOCOL Values]` | not yet |
-| P-JSON-9 | Node 9 datetime: moment `u8` (date, time, timestamp), UTC `i64`, zone minutes `i16`, zoned `u8`, precision `u8` | `[PROTOCOL Values]` | not yet |
-| P-JSON-10 | Node 10 array: count `u32`, size `u32`, an offset `u32` of each element, the elements | `[PROTOCOL Values]` | not yet |
-| P-JSON-11 | Node 11 object: count `u32`, size `u32`, an offset `u32` of each member in key order, the members in written order, each key and value | `[PROTOCOL Values]` | not yet |
-| P-JSON-100 | A document: a version octet, 1, then its root node; another version refused | `[PROTOCOL Values]` | not yet |
-| P-JSON-101 | An object's directory sorted by key octets, members of one key in written order; written order kept | `[PROTOCOL Values]` | not yet |
+| P-JSON-0 | Node 0 null | `[PROTOCOL Values]` | done |
+| P-JSON-1 | Node 1 false | `[PROTOCOL Values]` | done |
+| P-JSON-2 | Node 2 true | `[PROTOCOL Values]` | done |
+| P-JSON-3 | Node 3 integer: `i64` | `[PROTOCOL Values]` | done |
+| P-JSON-4 | Node 4 decimal: units `i64`, scale `u8` | `[PROTOCOL Values]` | done |
+| P-JSON-5 | Node 5 wide decimal: units `i128`, scale `u32` | `[PROTOCOL Values]` | done |
+| P-JSON-6 | Node 6 decimal floating point: coefficient `i128`, exponent `i32` | `[PROTOCOL Values]` | done |
+| P-JSON-7 | Node 7 approximate: `f64` bits | `[PROTOCOL Values]` | done |
+| P-JSON-8 | Node 8 string: octets `u32`, UTF-8 | `[PROTOCOL Values]` | done |
+| P-JSON-9 | Node 9 datetime: moment `u8` (date, time, timestamp), UTC `i64`, zone minutes `i16`, zoned `u8`, precision `u8` | `[PROTOCOL Values]` | done |
+| P-JSON-10 | Node 10 array: count `u32`, size `u32`, an offset `u32` of each element, the elements | `[PROTOCOL Values]` | done |
+| P-JSON-11 | Node 11 object: count `u32`, size `u32`, an offset `u32` of each member in key order, the members in written order, each key and value | `[PROTOCOL Values]` | done |
+| P-JSON-100 | A document: a version octet, 1, then its root node; another version refused | `[PROTOCOL Values]` | done |
+| P-JSON-101 | An object's directory sorted by key octets, members of one key in written order; written order kept | `[PROTOCOL Values]` | done |
 
 ### Composite fields
 
