@@ -36,7 +36,7 @@ classifiers = [
 [project.urls]
 Homepage = "https://github.com/turborel/turborel-py"
 Repository = "https://github.com/turborel/turborel-py"
-Documentation = "https://github.com/turborel/turborel-py/blob/main/doc/README.md"
+Documentation = "https://turborel.com/docs/drivers/python/"
 Issues = "https://github.com/turborel/turborel-py/issues"
 
 # uv's own backend, bounded to the minor release CI's uv pins (RULES.md D10).

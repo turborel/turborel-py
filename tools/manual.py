@@ -1,11 +1,13 @@
 """The manual's layout, and every document's links (RULES.md D4, R-DOC-7).
 
-turborel.com's documentation site reads `doc/` alone, so each page opens
-with its `# Title` and a line holding only `[Contents](README.md)`, each
-volume's README.md lists its pages, a link within `doc/` is a relative
-`.md` link that resolves, and a link out of `doc/` is a full URL. A
-relative link in any other document resolves too. Each check gives its
-findings as lines for a person, empty when the rule holds.
+turborel.com's documentation site reads `doc/`, so each page opens with
+its `# Title` and a line holding only `[Contents](README.md)`, each
+volume's README.md lists its pages, `user/01-installing.md` keeps its
+name, and `doc/` holds no images. A relative link resolves, in `doc/`
+and in every other document: one from `doc/` to another file of the
+repository is relative too, as the site points it at GitHub at the same
+tag. Each check gives its findings as lines for a person, empty when the
+rule holds.
 """
 
 from __future__ import annotations
@@ -28,6 +30,11 @@ README: Final = "README.md"
 _LINK: Final = re.compile(r"\]\(([^)\s]+)\)")
 _FENCE: Final = re.compile(r"^```.*?^```", re.MULTILINE | re.DOTALL)
 _EXTERNAL: Final = re.compile(r"^[a-z][a-z0-9+.-]*:")
+_IMAGE: Final = re.compile(r"!\[[^\]]*\]\(|<img\b", re.IGNORECASE)
+_IMAGE_SUFFIXES: Final = frozenset({".png", ".jpg", ".jpeg", ".gif", ".svg", ".webp"})
+
+INSTALLING: Final = "user/01-installing.md"
+"""The chapter the site links as the driver's installing page."""
 
 
 def _targets(text: str) -> list[str]:
@@ -36,27 +43,37 @@ def _targets(text: str) -> list[str]:
     return [t for t in targets if not _EXTERNAL.match(t) and not t.startswith("#")]
 
 
-def links(path: Path, text: str, doc: Path) -> list[str]:
+def links(path: Path, text: str) -> list[str]:
     """A finding for each relative link of `path` that does not resolve.
 
     Args:
         path: The Markdown file.
         text: Its text.
-        doc: The manual's folder, which a link from within may not leave.
 
     Returns:
-        A finding for each link to no file, or out of `doc` from within it.
+        A finding for each link to no file.
     """
-    findings = []
-    inside = path.resolve().is_relative_to(doc.resolve())
-    for target in _targets(text):
-        resolved = (path.parent / target.split("#")[0]).resolve()
-        if not resolved.exists():
-            findings.append(f"{path}: the link {target} leads to no file (R-DOC-7)")
-        elif inside and not resolved.is_relative_to(doc.resolve()):
-            findings.append(
-                f"{path}: the link {target} leaves doc/; give a full URL (R-DOC-7)"
-            )
+    return [
+        f"{path}: the link {target} leads to no file (R-DOC-7)"
+        for target in _targets(text)
+        if not (path.parent / target.split("#")[0]).exists()
+    ]
+
+
+def images(doc: Path) -> list[str]:
+    """R-DOC-7: a finding for each image in `doc`, a file or a Markdown one."""
+    findings = [
+        f"{path}: the manual holds no images (R-DOC-7)"
+        for path in sorted(doc.rglob("*"))
+        if path.suffix.lower() in _IMAGE_SUFFIXES
+    ]
+    findings += [
+        f"{path}: the manual holds no images (R-DOC-7)"
+        for path in sorted(doc.rglob("*.md"))
+        if _IMAGE.search(path.read_text(encoding="utf-8"))
+    ]
+    if not (doc / INSTALLING).exists():
+        findings.append(f"{doc / INSTALLING}: the chapter keeps its name (R-DOC-7)")
     return findings
 
 
@@ -107,9 +124,9 @@ def check(root: Path) -> list[str]:
     documents = sorted(root.glob("*.md")) + sorted(doc.rglob("*.md"))
     for path in documents:
         text = path.read_text(encoding="utf-8")
-        findings += links(path, text, doc)
+        findings += links(path, text)
         if path.is_relative_to(doc):
             findings += page_form(path, text, doc)
     for folder in sorted(p for p in doc.iterdir() if p.is_dir()):
         findings += listed(folder)
-    return findings
+    return findings + images(doc)
