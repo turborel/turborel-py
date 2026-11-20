@@ -6,7 +6,7 @@ import datetime as dt
 
 import pytest
 
-from turborel import DataError, ProgrammingError
+from turborel import DataError
 from turborel._codec.datatypes import Moment
 from turborel._codec.datetimes import (
     MICROS_PER_DAY,
@@ -151,7 +151,7 @@ def test_a_displacement_of_part_of_a_minute_is_refused() -> None:
 
 
 def test_a_time_whose_zone_needs_a_date_is_refused() -> None:
-    """Verifies: [DESIGN] D13 a time's zone of no fixed displacement, 07006."""
-    with pytest.raises(ProgrammingError) as failure:
+    """Verifies: [DESIGN] D13 a time's zone of no fixed displacement, 22000."""
+    with pytest.raises(DataError) as failure:
         from_python(dt.time(12, 0, tzinfo=NoDisplacement()))
-    assert failure.value.sqlstate == "07006"
+    assert failure.value.sqlstate == "22000"

@@ -401,7 +401,7 @@ def encoded_row(values: Sequence[object]) -> bytes:
     """A row as a CopyData carries it, to be sent with others.
 
     Raises:
-        ProgrammingError: SQLSTATE 07006, of a value of no type the
+        DataError: SQLSTATE 22000, of a value of no type the
             protocol carries; and as `write_row` raises.
     """
     w = Writer()

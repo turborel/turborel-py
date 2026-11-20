@@ -9,7 +9,7 @@ from decimal import Decimal
 
 import pytest
 
-from turborel import DataError, NotSupportedError, OperationalError, ProgrammingError
+from turborel import DataError, NotSupportedError, OperationalError
 from turborel._codec import jsonwrite
 from turborel._codec.fields import Reader
 from turborel._codec.jsontree import JsonValue, decode
@@ -216,9 +216,9 @@ def test_damaged_octets_fail_the_connection(document: bytes) -> None:
 @pytest.mark.parametrize(
     ("value", "error"),
     [
-        ({1, 2}, ProgrammingError),
-        ({1: "a"}, ProgrammingError),
-        (b"x", ProgrammingError),
+        ({1, 2}, DataError),
+        ({1: "a"}, DataError),
+        (b"x", DataError),
         (1 << 127, DataError),
         (Decimal("NaN"), DataError),
     ],

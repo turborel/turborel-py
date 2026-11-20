@@ -71,7 +71,7 @@ def test_a_warning_is_not_an_error() -> None:
     ("make", "exception", "sqlcode", "sqlstate"),
     [
         (lambda: _errors.data_error("x", "22003"), turborel.DataError, -301, "22003"),
-        (lambda: _errors.unsendable("x"), turborel.ProgrammingError, -921, "07006"),
+        (lambda: _errors.unsendable("x"), turborel.DataError, -301, "22000"),
         (lambda: _errors.beyond_limits("x"), turborel.NotSupportedError, -900, "0A000"),
         (lambda: _errors.misuse("x"), turborel.InterfaceError, -910, "TB910"),
         (

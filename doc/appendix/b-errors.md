@@ -60,7 +60,7 @@ SQLCODE -919 and SQLSTATE 08006, ends the connection too.
 |---|---|---|---|
 | 08006 | -919 | `OperationalError` | the server cannot be reached; a TLS handshake fails; a wait runs out; a reply cannot be read, is out of turn or is too long; a capability not granted is needed |
 | 28000 | -919 | `OperationalError` | a password, or SCRAM, would go over plain TCP |
-| 07006 | -921 | `ProgrammingError` | a value of a type the protocol cannot carry |
+| 22000 | -301 | `DataError` | a value of a type the protocol cannot carry |
 | 22003 | -301 | `DataError` | a number its field cannot hold |
 | 22008 | -301 | `DataError` | a datetime its fields cannot hold |
 | 2200M | -301 | `DataError` | an XML value's nodes asked for, its text not well-formed |

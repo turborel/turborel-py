@@ -77,7 +77,7 @@ def write_row(w: Writer, values: Sequence[object]) -> None:
     """A row, or an Execute's values: their count, then each value.
 
     Raises:
-        ProgrammingError: SQLSTATE 07006, of a value of no type the
+        DataError: SQLSTATE 22000, of a value of no type the
             protocol carries.
         DataError: SQLSTATE 22003, of a number past its fields.
         NotSupportedError: SQLSTATE 0A000, of parts nested past 16 levels.

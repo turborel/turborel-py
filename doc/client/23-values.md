@@ -39,7 +39,7 @@ Each class is frozen: it compares and hashes by its value.
 
 A value that cannot be sent is refused before anything is sent, so the
 server never sees it: of a Python type no value carries,
-`ProgrammingError`, SQLSTATE 07006; a number past its fields,
+`DataError`, SQLSTATE 22000; a number past its fields,
 `DataError`, SQLSTATE 22003; a displacement of part of a minute,
 SQLSTATE 22008; parts nested past 16 levels, a multiset of more than
 65 535 elements or a JSON value past 128 levels or 256 MiB,

@@ -103,7 +103,7 @@ Without `conditions` a statement's conditions come as notices, with
 | `query_many`, a numbered cursor, `describe`, `describe_cursor` or query attributes without their capability, before anything is sent | -919, 08006 |
 | A cursor not open fetched, closed or described; one open opened again, or its statement deallocated or prepared again | the server's, 24000 |
 | A statement deallocated, or of no such number | the server's, 26000 |
-| A value of a type the protocol cannot carry | -921, 07006 |
+| A value of a type the protocol cannot carry | -301, 22000 |
 | A value its field cannot hold | -301, 22003 or 22008 |
 | A reply out of turn | -919, 08006, the connection lost |
 

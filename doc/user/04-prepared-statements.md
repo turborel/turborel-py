@@ -48,7 +48,7 @@ print(conn.execute(cheap, (Decimal("1.00"),)).rows)
 A statement stays prepared across transactions, until it is deallocated
 or the session is reset. The values a parameter takes are those
 [Appendix A](../appendix/a-types.md) gives; a value of a type the
-protocol cannot carry fails before it is sent, with SQLSTATE 07006.
+protocol cannot carry fails before it is sent, with SQLSTATE 22000.
 
 ## Cursors
 

@@ -69,7 +69,7 @@ The failures the driver raises itself:
 | A server that cannot be reached, a TLS handshake that fails, a wait that runs out, a reply that cannot be read, is out of turn or is too long | `OperationalError` | -919, 08006 |
 | A method needing a capability the server did not grant, before it sends anything | `OperationalError` | -919, 08006 |
 | A password, or SCRAM, over plain TCP, before connecting | `OperationalError` | -919, 28000 |
-| A value of a type the protocol cannot carry | `ProgrammingError` | -921, 07006 |
+| A value of a type the protocol cannot carry | `DataError` | -301, 22000 |
 | A number its field cannot hold, or not finite | `DataError` | -301, 22003 |
 | A datetime its fields cannot hold | `DataError` | -301, 22008 |
 | An XML value whose nodes are asked for, not well-formed or declaring a document type | `DataError` | -301, 2200M |

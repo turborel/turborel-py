@@ -9,7 +9,7 @@ from decimal import Decimal
 
 import pytest
 
-from turborel import DataError, NotSupportedError, OperationalError, ProgrammingError
+from turborel import DataError, NotSupportedError, OperationalError
 from turborel._codec.datatypes import IntervalField, Qualifier
 from turborel._codec.fields import I128_MAX, I128_MIN, Reader, Writer
 from turborel._codec.jsonwrite import encode as json_document
@@ -269,9 +269,9 @@ def test_arrays_nest_16_deep() -> None:
 @pytest.mark.parametrize(
     ("value", "error", "sqlstate"),
     [
-        ({1, 2}, ProgrammingError, "07006"),
-        ({"a": 1}, ProgrammingError, "07006"),
-        (object(), ProgrammingError, "07006"),
+        ({1, 2}, DataError, "22000"),
+        ({"a": 1}, DataError, "22000"),
+        (object(), DataError, "22000"),
         (I128_MAX + 1, DataError, "22003"),
         (Decimal("Infinity"), DataError, "22003"),
         (Interval(YEAR_MONTH, I128_MIN - 1), DataError, "22003"),

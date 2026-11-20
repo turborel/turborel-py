@@ -79,7 +79,7 @@ def from_python(value: Datetime) -> Fields:
     Raises:
         DataError: SQLSTATE 22008, of a displacement that is not whole
             minutes.
-        ProgrammingError: SQLSTATE 07006, of a time whose zone gives no
+        DataError: SQLSTATE 22000, of a time whose zone gives no
             fixed displacement without a date.
     """
     if isinstance(value, dt.datetime):

@@ -39,7 +39,7 @@ with tag 1, as a CHARACTER value does.
 | 27 | UUID | `uuid.UUID` | `uuid.UUID` |
 
 A value sent of any other Python type is refused before anything is
-sent, with `turborel.ProgrammingError`, SQLSTATE 07006.
+sent, with `turborel.DataError`, SQLSTATE 22000.
 
 ## The bounds of each
 
@@ -64,7 +64,7 @@ Python does. A time or a timestamp WITH TIME ZONE is read with a fixed
 without a zone is naive, in the displacement the server shows it in. An
 aware `datetime` or `time` is sent WITH TIME ZONE, a naive one without;
 its displacement must be whole minutes (else SQLSTATE 22008), and a
-`time`'s zone must give one without a date (else SQLSTATE 07006). The
+`time`'s zone must give one without a date (else SQLSTATE 22000). The
 driver sends a time or a timestamp with 6 digits of the second's
 fraction. A value past Python's years 1 to 9999 cannot be read.
 

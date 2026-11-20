@@ -57,7 +57,7 @@ def encode(value: object) -> bytes:
     """The stored form of the JSON value `value`.
 
     Raises:
-        ProgrammingError: SQLSTATE 07006, of a part no JSON value holds,
+        DataError: SQLSTATE 22000, of a part no JSON value holds,
             or an object's key that is not a str.
         DataError: SQLSTATE 22003, of a number past its node's fields.
         NotSupportedError: SQLSTATE 0A000, past 128 levels of nesting or

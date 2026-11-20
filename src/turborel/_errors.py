@@ -27,10 +27,8 @@ NUMERIC_OUT_OF_RANGE: Final = "22003"
 """SQLSTATE 22003: a number its field cannot hold."""
 DATETIME_FIELD_OVERFLOW: Final = "22008"
 """SQLSTATE 22008: a datetime its fields cannot hold."""
-DYNAMIC_SQLCODE: Final = -921
-"""A dynamic SQL error, of SQLSTATE class 07."""
-RESTRICTED_DATA_TYPE: Final = "07006"
-"""SQLSTATE 07006: a parameter of a type that cannot be sent."""
+DATA_EXCEPTION: Final = "22000"
+"""SQLSTATE 22000: a data exception, as of a value no type of the protocol carries."""
 UNSUPPORTED_SQLCODE: Final = -900
 """Valid, but beyond turborel's limits."""
 FEATURE_NOT_SUPPORTED: Final = "0A000"
@@ -163,8 +161,8 @@ def data_error(message: str, sqlstate: str) -> DataError:
     return DataError(message, sqlcode=DATA_SQLCODE, sqlstate=sqlstate)
 
 
-def unsendable(message: str) -> ProgrammingError:
-    """A parameter of no type the protocol carries: -921 and 07006.
+def unsendable(message: str) -> DataError:
+    """A parameter of no type the protocol carries: -301 and 22000.
 
     Args:
         message: What could not be sent.
@@ -172,9 +170,7 @@ def unsendable(message: str) -> ProgrammingError:
     Returns:
         The error to raise.
     """
-    return ProgrammingError(
-        message, sqlcode=DYNAMIC_SQLCODE, sqlstate=RESTRICTED_DATA_TYPE
-    )
+    return DataError(message, sqlcode=DATA_SQLCODE, sqlstate=DATA_EXCEPTION)
 
 
 def beyond_limits(message: str) -> NotSupportedError:

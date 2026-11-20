@@ -528,7 +528,7 @@ form of a large object, never sent, the codec refuses.
 What a program sends is checked before a byte is written, by the same
 bounds, so the server never has to refuse it: a number its field cannot
 hold is a `DataError` (SQLSTATE 22003), a value of no type the protocol
-carries a `ProgrammingError` (07006), parts nested past the bound a
+carries a `DataError` (22000), parts nested past the bound a
 `NotSupportedError` (0A000), and an argument of a request out of its
 field's range an `InterfaceError` (Turborel's TB910).
 
