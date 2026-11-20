@@ -116,31 +116,31 @@ From `doc/client/05-protocol.md`, The Native Protocol.
 
 | ID | Row | Citation | Status |
 |---|---|---|---|
-| P-TYPE-1 | 1 CHARACTER: length `u32`, units `u8` (0 characters, 1 octets) | `[PROTOCOL Data types]` | not yet |
-| P-TYPE-2 | 2 exact numeric: precision `u32`, scale `u32` | `[PROTOCOL Data types]` | not yet |
-| P-TYPE-3 | 3 approximate numeric: precision `u32` | `[PROTOCOL Data types]` | not yet |
-| P-TYPE-4 | 4 a plug-in's type: its name, its parameters as a list of `u32` | `[PROTOCOL Data types]` | not yet |
-| P-TYPE-5 | 5 CHARACTER VARYING: length `u32`, units `u8` | `[PROTOCOL Data types]` | not yet |
-| P-TYPE-6 | 6 BINARY: length `u32` | `[PROTOCOL Data types]` | not yet |
-| P-TYPE-7 | 7 BINARY VARYING: length `u32` | `[PROTOCOL Data types]` | not yet |
-| P-TYPE-8 | 8 DATE: precision `u32` | `[PROTOCOL Data types]` | not yet |
-| P-TYPE-9 | 9 TIME: precision `u32` | `[PROTOCOL Data types]` | not yet |
-| P-TYPE-10 | 10 TIME WITH TIME ZONE: precision `u32` | `[PROTOCOL Data types]` | not yet |
-| P-TYPE-11 | 11 TIMESTAMP: precision `u32` | `[PROTOCOL Data types]` | not yet |
-| P-TYPE-12 | 12 TIMESTAMP WITH TIME ZONE: precision `u32` | `[PROTOCOL Data types]` | not yet |
-| P-TYPE-13 | 13 INTERVAL: start field, end field, leading precision, fractional precision, each `u32`; fields 0 YEAR, 1 MONTH, 2 DAY, 3 HOUR, 4 MINUTE, 5 SECOND | `[PROTOCOL Data types]` | not yet |
-| P-TYPE-14 | 14 BOOLEAN: nothing | `[PROTOCOL Data types]` | not yet |
-| P-TYPE-15 | 15 DECFLOAT: precision `u32` | `[PROTOCOL Data types]` | not yet |
-| P-TYPE-16 | 16 array: maximum cardinality `u32`, then the element type | `[PROTOCOL Data types]` | not yet |
-| P-TYPE-17 | 17 row: a list of each field's name, then its type | `[PROTOCOL Data types]` | not yet |
-| P-TYPE-18 | 18 CHARACTER LARGE OBJECT: length `u64`, units `u8` | `[PROTOCOL Data types]` | not yet |
-| P-TYPE-19 | 19 BINARY LARGE OBJECT: length `u64`, units `u8` | `[PROTOCOL Data types]` | not yet |
-| P-TYPE-22 | 22 multiset: the element type | `[PROTOCOL Data types]` | not yet |
-| P-TYPE-23 | 23 structured type: its schema and name; its proper supertypes, each schema and name | `[PROTOCOL Data types]` | not yet |
-| P-TYPE-24 | 24 reference type: the referenced type's names; scoped `u8`, and if 1 the scope's schema and name | `[PROTOCOL Data types]` | not yet |
-| P-TYPE-25 | 25 JSON: nothing | `[PROTOCOL Data types]` | not yet |
-| P-TYPE-26 | 26 XML: primary modifier `u8` (DOCUMENT, CONTENT, SEQUENCE), secondary `u8` (UNTYPED, ANY, XMLSCHEMA); of XMLSCHEMA, the schema's schema and name, its namespace and its element | `[PROTOCOL Data types]` | not yet |
-| P-TYPE-27 | 27 UUID: nothing (gap G1) | `[PROTOCOL Data types]` | not yet |
+| P-TYPE-1 | 1 CHARACTER: length `u32`, units `u8` (0 characters, 1 octets) | `[PROTOCOL Data types]` | done |
+| P-TYPE-2 | 2 exact numeric: precision `u32`, scale `u32` | `[PROTOCOL Data types]` | done |
+| P-TYPE-3 | 3 approximate numeric: precision `u32` | `[PROTOCOL Data types]` | done |
+| P-TYPE-4 | 4 a plug-in's type: its name, its parameters as a list of `u32` | `[PROTOCOL Data types]` | done |
+| P-TYPE-5 | 5 CHARACTER VARYING: length `u32`, units `u8` | `[PROTOCOL Data types]` | done |
+| P-TYPE-6 | 6 BINARY: length `u32` | `[PROTOCOL Data types]` | done |
+| P-TYPE-7 | 7 BINARY VARYING: length `u32` | `[PROTOCOL Data types]` | done |
+| P-TYPE-8 | 8 DATE: precision `u32` | `[PROTOCOL Data types]` | done |
+| P-TYPE-9 | 9 TIME: precision `u32` | `[PROTOCOL Data types]` | done |
+| P-TYPE-10 | 10 TIME WITH TIME ZONE: precision `u32` | `[PROTOCOL Data types]` | done |
+| P-TYPE-11 | 11 TIMESTAMP: precision `u32` | `[PROTOCOL Data types]` | done |
+| P-TYPE-12 | 12 TIMESTAMP WITH TIME ZONE: precision `u32` | `[PROTOCOL Data types]` | done |
+| P-TYPE-13 | 13 INTERVAL: start field, end field, leading precision, fractional precision, each `u32`; fields 0 YEAR, 1 MONTH, 2 DAY, 3 HOUR, 4 MINUTE, 5 SECOND | `[PROTOCOL Data types]` | done |
+| P-TYPE-14 | 14 BOOLEAN: nothing | `[PROTOCOL Data types]` | done |
+| P-TYPE-15 | 15 DECFLOAT: precision `u32` | `[PROTOCOL Data types]` | done |
+| P-TYPE-16 | 16 array: maximum cardinality `u32`, then the element type | `[PROTOCOL Data types]` | done |
+| P-TYPE-17 | 17 row: a list of each field's name, then its type | `[PROTOCOL Data types]` | done |
+| P-TYPE-18 | 18 CHARACTER LARGE OBJECT: length `u64`, units `u8` | `[PROTOCOL Data types]` | done |
+| P-TYPE-19 | 19 BINARY LARGE OBJECT: length `u64`, units `u8` | `[PROTOCOL Data types]` | done |
+| P-TYPE-22 | 22 multiset: the element type | `[PROTOCOL Data types]` | done |
+| P-TYPE-23 | 23 structured type: its schema and name; its proper supertypes, each schema and name | `[PROTOCOL Data types]` | done |
+| P-TYPE-24 | 24 reference type: the referenced type's names; scoped `u8`, and if 1 the scope's schema and name | `[PROTOCOL Data types]` | done |
+| P-TYPE-25 | 25 JSON: nothing | `[PROTOCOL Data types]` | done |
+| P-TYPE-26 | 26 XML: primary modifier `u8` (DOCUMENT, CONTENT, SEQUENCE), secondary `u8` (UNTYPED, ANY, XMLSCHEMA); of XMLSCHEMA, the schema's schema and name, its namespace and its element | `[PROTOCOL Data types]` | done |
+| P-TYPE-27 | 27 UUID: nothing (gap G1) | `[PROTOCOL Data types]` | done |
 | P-TYPE-100 | A distinct type written as its source type | `[PROTOCOL Data types]` | not yet |
 | P-TYPE-101 | A plug-in's type the client does not have read by its name, its values shown by their text | `[PROTOCOL Data types]` | not yet |
 
