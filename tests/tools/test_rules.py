@@ -78,6 +78,7 @@ def test_a_citation_of_nothing_fails() -> None:
     """
     path = Path("a.py")
     good = f"{OPEN}PROTOCOL Frames] {OPEN}DESIGN] D1 {OPEN}TOOL] R-SIZE-1"
+    good += f" {OPEN}PROTOCOL Compressed\n    frames]"
     assert citations(path, good, RULES) == []
     bad = f"{OPEN}PROTOCOL Framez] {OPEN}CLIENT Pools!] {OPEN}DESIGN] D2"
     bad += f" {OPEN}TOOL] R-SIZE-9"

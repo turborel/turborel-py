@@ -136,9 +136,11 @@ def citations(path: Path, text: str, rules: str) -> list[str]:
     """
     decisions = set(_DECISION_HEADING.findall(rules))
     rule_ids = set(_RULE_ROW.findall(rules))
+    # A citation wrapped across lines is the heading of its words.
+    cited = [(d, " ".join(h.split())) for d, h in _DOCUMENT_CITATION.findall(text)]
     findings = [
         f"{path}: [{document} {heading}] is no heading of {document} (R-TRACE-2)"
-        for document, heading in _DOCUMENT_CITATION.findall(text)
+        for document, heading in cited
         if heading not in DOCUMENTS[document] and not heading.startswith(_PLACEHOLDER)
     ]
     findings += [
