@@ -2,23 +2,36 @@
 
 The driver speaks turborel's native protocol, version 1, itself, in pure
 Python on the standard library, with no native code to build (RULES.md
-D1). Its interface is to be DB-API 2.0 (PEP 249), with the `qmark`
-parameter style, and an asyncio interface beside it, `turborel.aio`
-(RULES.md D2).
+D1). Its interface is DB-API 2.0 (PEP 249), with the `qmark` parameter
+style, and an asyncio interface beside it, `turborel.aio` (RULES.md D2);
+under both, the low-level client, `turborel.client`, has every feature
+of turborel-client.
 
-This is version 0.0.0, an alpha, and it does not connect to a server
-yet. The package holds PEP 249's exceptions, the two module globals
-already settled, `apilevel` and `paramstyle`, and the classes of the
-values Python has no type of its own for (doc/appendix/a-types.md).
-`connect`, `threadsafety`, the connection and cursor objects and
-`turborel.aio` come with the interface itself. CONFORMANCE.md, in the
-driver's repository, says what is implemented.
+This is version 0.0.0, an alpha (VERSIONING.md). The package holds
+`connect`, PEP 249's globals, the connection and cursor, the type
+objects and constructors, the exceptions, and the classes of the values
+Python has no type of its own for (doc/appendix/a-types.md).
 """
 
 from __future__ import annotations
 
 from typing import Final
 
+from turborel._api.dbapi import Connection, Cursor, connect
+from turborel._api.types import (
+    BINARY,
+    DATETIME,
+    NUMBER,
+    ROWID,
+    STRING,
+    Binary,
+    Date,
+    DateFromTicks,
+    Time,
+    TimeFromTicks,
+    Timestamp,
+    TimestampFromTicks,
+)
 from turborel._codec.datatypes import IntervalField, Qualifier
 from turborel._errors import (
     DatabaseError,
@@ -54,9 +67,22 @@ apilevel: Final = "2.0"
 paramstyle: Final = "qmark"
 """Parameters are marked `?`, as SQL's dynamic parameters are (RULES.md D2)."""
 
+threadsafety: Final = 1
+"""Threads may share the module, not a connection; a pool shares them (PEP 249)."""
+
 __all__ = [
+    "BINARY",
+    "DATETIME",
+    "NUMBER",
+    "ROWID",
+    "STRING",
+    "Binary",
+    "Connection",
+    "Cursor",
     "DataError",
     "DatabaseError",
+    "Date",
+    "DateFromTicks",
     "DecFloat",
     "Error",
     "IntegrityError",
@@ -75,9 +101,15 @@ __all__ = [
     "Qualifier",
     "Reference",
     "Structured",
+    "Time",
+    "TimeFromTicks",
+    "Timestamp",
+    "TimestampFromTicks",
     "Warning",
     "Xml",
     "__version__",
     "apilevel",
+    "connect",
     "paramstyle",
+    "threadsafety",
 ]

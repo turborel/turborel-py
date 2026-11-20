@@ -103,9 +103,14 @@ class Peer:
     """The server's end of a socket pair, the client's end given to the driver."""
 
     def __init__(self) -> None:
-        """A connected pair; the client's end in `client`."""
+        """A connected pair; the client's end in `client`.
+
+        Each end waits at most 10 seconds, so a test whose peer sends too
+        little fails rather than hangs.
+        """
         self.client, self._server = socket.socketpair()
         self._server.settimeout(5)
+        self.client.settimeout(10)
 
     def reply(self, *frames: bytes) -> None:
         """Queue `frames`, as the server sends them."""

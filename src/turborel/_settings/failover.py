@@ -154,7 +154,7 @@ def context(mode: TlsMode, tls: TlsFiles) -> ssl.SSLContext | None:
     return made
 
 
-def _targets(
+def targets_of(
     host: Host, server_name: str | None, tls: ssl.SSLContext | None
 ) -> list[tuple[str, Target | Error]]:
     """The targets of `host`, named: its local socket, or each address of its name."""
@@ -178,7 +178,7 @@ def _targets(
     return named
 
 
-def _mechanism(settings: Settings, host: Host, target: Target) -> Mechanism:
+def mechanism_of(settings: Settings, host: Host, target: Target) -> Mechanism:
     password = settings.password_for(host)
     mechanism: Mechanism
     if password is not None:
@@ -219,7 +219,7 @@ def _attempt(settings: Settings, host: Host, target: Target) -> Connection:
     timeouts = Timeouts(connect=settings.connect_timeout, read=None)
     target, stream, bound = _opened(settings, target, timeouts.connect)
     try:
-        mechanism = _mechanism(settings, host, target)
+        mechanism = mechanism_of(settings, host, target)
         if isinstance(target, Tcp):
             in_the_clear(mechanism)
     except Error:
@@ -277,7 +277,7 @@ def connect(settings: Settings) -> Connection:
     tried: list[tuple[str, Error]] = []
     for host in hosts:
         tls_here = None if isinstance(host, Local) else tls
-        for at, target in _targets(host, settings.tls.server_name, tls_here):
+        for at, target in targets_of(host, settings.tls.server_name, tls_here):
             if isinstance(target, Error):
                 tried.append((at, target))
                 continue

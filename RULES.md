@@ -67,7 +67,10 @@ Each is told in full in [§7](#7-the-decisions).
 | `pyproject.toml` | the package, its build (D10) and every check's configuration (D11) |
 | `uv.lock` | the development tools, locked (R-DEP-3) |
 | `.python-version` | the Python uv runs locally: 3.11, the oldest |
-| `src/turborel/__init__.py` | the package: its docstring, PEP 249's globals and exceptions (D2) |
+| `src/turborel/__init__.py` | the package, the standard API: `connect`, PEP 249's globals, the connection and cursor, type objects, constructors and exceptions (D2) |
+| `src/turborel/_api/` | the standard API's parts: the blocking connection and cursor, what a cursor keeps of an outcome, the type objects and constructors |
+| `src/turborel/aio.py` | `turborel.aio`, the standard API for asyncio (D2) |
+| `src/turborel/_aio/` | the asyncio interface's parts: its stream, its runner of the same requests, its client, connecting by settings |
 | `src/turborel/_errors.py` | PEP 249's exceptions, each carrying SQLCODE and SQLSTATE (D9) |
 | `src/turborel/_codec/` | the `codec` layer, without I/O: frames, fields, types and values, JSON, the tail, every message, compression (D1) |
 | `src/turborel/_values.py` | the classes of values Python has no type of its own for (doc/appendix/a-types.md) |
@@ -324,18 +327,23 @@ session's status, is reached through the low-level client or the
 driver's own extensions of the standard interface.
 
 Every failure is the driver's error, carrying its SQLCODE and SQLSTATE
-(R-ERR). The standard interface is built at milestone M7 and checked in
-M8's audit; until then its names may change.
+(R-ERR). The standard interface was built at milestone M7 and is checked
+in M8's audit.
 
 In Python the standard interface is PEP 249's, DB-API 2.0, and
 `paramstyle` is `qmark`: a parameter is `?`, as SQL's dynamic parameters
 are, so a statement goes to the server as written. `turborel.aio` has
 the same objects, with coroutines for the methods that wait. The
 driver's error is PEP 249's hierarchy of exceptions (D9). An exact
-number is a `decimal.Decimal`, or an `int` of scale 0. The module holds
-`apilevel`, `paramstyle` and the exceptions from the start; `connect`,
-`threadsafety`, the connection and the cursor come with M7, and
-`threadsafety` says what the connection then allows.
+number is a `decimal.Decimal`, or an `int` of scale 0. `threadsafety`
+is 1: threads may share the module, not a connection, which a pool
+shares instead. `connect` connects as settings say, a `turborel://` URI
+or settings by name; a statement of parameters is prepared once, kept
+by its text, and executed; `executemany` runs as one pipeline; and a
+connection closed with a transaction active rolls it back, as PEP 249
+says, whatever SESSION.COMMIT_AT_END says. `turborel.aio` runs the same
+request generators over asyncio's streams, a Windows named pipe's reads
+and writes in asyncio's threads.
 
 #### D3. The runtime minimum follows the ecosystem's own support
 
