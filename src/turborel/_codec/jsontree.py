@@ -105,8 +105,11 @@ def decode(data: bytes, fail: Callable[[str], OperationalError]) -> JsonValue:
 
     Raises:
         OperationalError: SQLSTATE 08006, from `fail`, if the octets are
-            damaged.
+            damaged, or more than 256 MiB.
     """
+    if len(data) > MAX_DOCUMENT_OCTETS:
+        msg = f"a JSON value's stored form is longer than {MAX_DOCUMENT_OCTETS} octets"
+        raise fail(msg)
     if len(data) < 2 or data[0] != FORMAT_VERSION:  # noqa: PLR2004  # Its version, then a node.
         msg = "a JSON value does not begin with its format's version"
         raise fail(msg)

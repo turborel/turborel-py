@@ -457,6 +457,20 @@ rule here, the rule is kept:
   left: the two there were, a change of user leaving no transaction
   active and an import's long CLOB field sent by a locator, turborel-client
   does as the page says from b40bd830.
+- Where turborel-client is inconsistent, every Turborel driver keeps one
+  rule, decided for all of them:
+  - A reply value that cannot be decoded loses the connection, SQLCODE
+    -919 and SQLSTATE 08006: a length's units or a large object's kind
+    other than 0 or 1, a truth byte other than 0 or 1, a damaged JSON
+    document, one nested past 128 or longer than 256 MiB, a malformed
+    condition of Complete's tag 17; turborel-client gives TB916 or
+    0A000 on some of these and keeps the connection, out of step.
+  - Value tags 18 and 19, the server's stored form of a large object,
+    are refused as malformed, -919 and 08006, though turborel-protocol's
+    reader takes them.
+  - Attributes past their bounds are refused before anything is sent,
+    -919 and 08006, the connection kept; turborel-client sends them, and
+    the server fails the connection.
 - Python's `ssl` exports no keying material, so SCRAM-SHA-256-PLUS
   binds by `tls-server-end-point`, the certificate the server presented,
   over TLS 1.2 and 1.3 alike, where turborel-client binds by

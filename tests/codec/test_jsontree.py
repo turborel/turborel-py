@@ -10,7 +10,7 @@ from decimal import Decimal
 import pytest
 
 from turborel import DataError, NotSupportedError, OperationalError
-from turborel._codec import jsonwrite
+from turborel._codec import jsontree, jsonwrite
 from turborel._codec.fields import Reader
 from turborel._codec.jsontree import JsonValue, decode
 from turborel._codec.jsonwrite import encode
@@ -293,3 +293,18 @@ def test_an_exact_number_keeps_its_written_scale() -> None:
     assert encode(wide)[1] == 5
     assert encode(Decimal("1E-300"))[1] == 5
     assert read(encode(wide)) == wide
+
+
+def test_a_document_read_past_256_mib_loses_the_connection(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Verifies: [PROTOCOL JSON values] a document at most 256 MiB, read too.
+
+    [PROTOCOL Values] one longer than the bound is a reply that cannot be
+    read, which loses the connection (SQLCODE -919, SQLSTATE 08006), as
+    RULES.md D8 decides for every driver; the bound is lowered here.
+    """
+    monkeypatch.setattr(jsontree, "MAX_DOCUMENT_OCTETS", 8)
+    with pytest.raises(OperationalError) as long:
+        read(bytes([1, 8]) + key("abcdefgh")[:4] + b"abcdefgh")
+    assert (long.value.sqlcode, long.value.sqlstate) == (-919, "08006")
