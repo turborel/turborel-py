@@ -9,6 +9,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from turborel._client.core import Core
+from turborel._pipeline.pipelines import Pipeline
 from turborel._session.capabilities import QUERY_ATTRIBUTES
 from turborel._statements import prepared, queries
 
@@ -52,6 +53,10 @@ class Statements(Core):
                 lost; a statement's failure is the `Ran`'s.
         """
         return self._run(queries.query_many(self._session, sql))
+
+    def pipeline(self) -> Pipeline:
+        """An empty pipeline of requests on this connection, continuing on error."""
+        return Pipeline(self)
 
     def prepare(self, sql: str) -> Statement:
         """Prepare `sql`, its dynamic parameters written `?`.

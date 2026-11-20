@@ -102,10 +102,22 @@ def execute(
 ) -> Steps[Outcome]:
     """The statement executed with `values`: a query's rows whole, or its completion."""
     yield _execute(session, (statement, 0, session.autocommit), values, 0)
+    return (yield from execute_reply(session, statement))
+
+
+def execute_reply(session: Session, statement: Statement) -> Steps[Outcome]:
+    """The reply to an Execute of `statement`: a query's rows, or its completion."""
     if not statement.columns:
         return (yield from completion(session))
     found, _ = yield from rows(session)
     return Rowset(statement.columns, found)
+
+
+def execute_request(
+    session: Session, statement: Statement, values: Sequence[object], *, ends: bool
+) -> bytes:
+    """An Execute of `statement`, all its rows, ending its transaction if `ends`."""
+    return _execute(session, (statement, 0, ends), values, 0).data
 
 
 def open_cursor(

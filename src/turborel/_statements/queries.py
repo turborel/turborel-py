@@ -78,6 +78,12 @@ def _first(session: Session) -> Steps[Complete | Description]:
     raise session.lose_by("the server sent no result")
 
 
+def query_reply(session: Session) -> Steps[Outcome]:
+    """The reply to a Query of one statement sent: a query's rows, or its completion."""
+    outcome, _ = yield from _outcome(session)
+    return outcome
+
+
 def _outcome(session: Session) -> Steps[tuple[Outcome, bool]]:
     """A statement's outcome, and whether another's replies follow (tag 5)."""
     first = yield from _first(session)

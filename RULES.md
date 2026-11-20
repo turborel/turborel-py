@@ -79,8 +79,10 @@ Each is told in full in [§7](#7-the-decisions).
 | `src/turborel/_lobs/` | the `lobs` layer, as steps without I/O: large objects read by their locators, created, appended to, freed and held |
 | `src/turborel/_copy/` | the `copy` layer: bulk copy as steps without I/O; export, as CSV or the protocol's frames, and each value as text; import, its sources and delimited text, and names as SQL writes them |
 | `src/turborel/_settings/` | the `settings` layer: options, the URI, the service and password files, settings resolved, TLS by mode, several servers and roles |
+| `src/turborel/_pipeline/` | the `pipeline` layer: requests queued, written a window at a time, one outcome read for each |
+| `src/turborel/_pool/` | the `pool` layer: pools of connections, their check and reset, and the SQL-agent |
 | `src/turborel/_client/` | the low-level client's parts: a connection's core, its statements, its large objects, its copy and export, cancelling, connecting |
-| `src/turborel/client.py` | the low-level client, public: connections, statements, large objects, copy, import and export, settings, mechanisms, TLS, timeouts (D2) |
+| `src/turborel/client.py` | the low-level client, public: connections, statements, large objects, copy, import and export, settings, pipelines, pools, the SQL-agent, mechanisms, TLS, timeouts (D2) |
 | `src/turborel/py.typed` | says the package is typed (PEP 561) |
 | `tests/` | the tests, a folder for each layer, as `tests/codec/` for `_codec`; `tests/kit.py` the frames and peer they share |
 | `tests/server/` | the live tests and their server's set-up (D14) |

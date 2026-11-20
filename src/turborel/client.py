@@ -51,6 +51,24 @@ from turborel._copy.importing import (
 )
 from turborel._copy.sources import Heading, Position, Record, Source, SourceError
 from turborel._lobs.locators import CHUNK_OCTETS, LOB_INLINE_OCTETS
+from turborel._pipeline.pipelines import (
+    PIPELINE_WINDOW,
+    SKIPPED,
+    OnError,
+    Pipeline,
+    Skipped,
+)
+from turborel._pool.agent import Agent, Connector
+from turborel._pool.pools import (
+    DEFAULT_IDLE_TIMEOUT,
+    DEFAULT_MAX,
+    DEFAULT_MAX_LIFETIME,
+    DEFAULT_WAIT,
+    Pool,
+    PoolConfig,
+    Pooled,
+)
+from turborel._pool.reset import RESET_MOST_STATEMENTS, RESET_WITHIN
 from turborel._session.capabilities import Offer
 from turborel._session.state import KEPT_NOTICES
 from turborel._settings.failover import Role, role
@@ -91,25 +109,35 @@ __all__ = [
     "CONNECT_WITHIN",
     "DEFAULT_BATCH",
     "DEFAULT_HOST",
+    "DEFAULT_IDLE_TIMEOUT",
+    "DEFAULT_MAX",
+    "DEFAULT_MAX_LIFETIME",
     "DEFAULT_MAX_RECORD",
     "DEFAULT_PASSFILE",
     "DEFAULT_PIPE",
     "DEFAULT_PORT",
     "DEFAULT_SERVICE_FILE",
+    "DEFAULT_WAIT",
     "ENVIRONMENT",
     "KEPT_NOTICES",
     "KEYS",
     "KEY_CACHE_ENTRIES",
     "LOB_INLINE_OCTETS",
+    "PIPELINE_WINDOW",
+    "RESET_MOST_STATEMENTS",
+    "RESET_WITHIN",
     "SCHEME",
+    "SKIPPED",
     "TERMINATE_WITHIN",
     "Address",
+    "Agent",
     "Batch",
     "Canceller",
     "Certificate",
     "ChannelBinding",
     "Complete",
     "Connection",
+    "Connector",
     "Copying",
     "Delimited",
     "Diagnostics",
@@ -130,9 +158,14 @@ __all__ = [
     "Mechanism",
     "Notice",
     "Offer",
+    "OnError",
     "Options",
     "Outcome",
     "Password",
+    "Pipeline",
+    "Pool",
+    "PoolConfig",
+    "Pooled",
     "Position",
     "Ran",
     "Record",
@@ -142,6 +175,7 @@ __all__ = [
     "Scram",
     "Settings",
     "Sink",
+    "Skipped",
     "Source",
     "SourceError",
     "Statement",
