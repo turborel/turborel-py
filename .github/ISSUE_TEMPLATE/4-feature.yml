@@ -1,0 +1,43 @@
+name: Feature
+description: Something turborel-py should do that it does not.
+labels: ["feature"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Check TODO.md and CONFORMANCE.md first: what turborel-client does is planned already.
+        A feature the server lacks goes to turborel's own issues.
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What you need to do, and why turborel-py cannot do it today, or not well.
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind
+      options:
+        - Something turborel-client does
+        - The DB-API or the asyncio interface
+        - Connecting, TLS or authentication
+        - Settings, pipelines or pools
+        - Types and values
+        - Packaging or platforms
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you propose
+      description: |
+        How it would work, the interface it would add, and what turborel-client does, if it does.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives
+      description: What else would solve the problem, and why this is better.

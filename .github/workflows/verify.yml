@@ -1,0 +1,60 @@
+# Every check a change must pass (RULES.md R-PROC-1), on each platform and
+# each Python the driver supports (D3, D11), plus the coverage floor
+# (R-COV). uv installs each Python and the tools uv.lock pins. Actions are
+# pinned by their full commit, the version in a comment.
+name: verify
+
+# A pull request is checked once, through pull_request, and main again once
+# it is merged.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# A newer push to a pull request replaces its checks still running.
+concurrency:
+  group: verify-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+env:
+  UV_VERSION: "0.13.9"
+
+jobs:
+  verify:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python: ["3.11", "3.12", "3.13", "3.14", "3.15"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          version: ${{ env.UV_VERSION }}
+          python-version: ${{ matrix.python }}
+      - name: The environment uv.lock pins
+        run: uv sync --locked
+      - name: Every check
+        timeout-minutes: 30
+        run: uv run --locked python -m tools.verify
+
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          version: ${{ env.UV_VERSION }}
+          python-version: "3.15"
+      - name: The environment uv.lock pins
+        run: uv sync --locked
+      - name: Every check, and the coverage floor
+        run: uv run --locked python -m tools.verify --coverage

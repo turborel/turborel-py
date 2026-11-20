@@ -1,0 +1,64 @@
+area/codec:
+  - changed-files:
+      - any-glob-to-any-file: ["src/turborel/_codec/**", "tests/codec/**"]
+
+area/transport:
+  - changed-files:
+      - any-glob-to-any-file: ["src/turborel/_transport/**", "tests/transport/**"]
+
+area/auth:
+  - changed-files:
+      - any-glob-to-any-file: ["src/turborel/_auth/**", "tests/auth/**"]
+
+area/tls:
+  - changed-files:
+      - any-glob-to-any-file: ["src/turborel/_tls/**", "tests/tls/**"]
+
+area/session:
+  - changed-files:
+      - any-glob-to-any-file: ["src/turborel/_session/**", "tests/session/**"]
+
+area/statements:
+  - changed-files:
+      - any-glob-to-any-file: ["src/turborel/_statements/**", "tests/statements/**"]
+
+area/lobs:
+  - changed-files:
+      - any-glob-to-any-file: ["src/turborel/_lobs/**", "tests/lobs/**"]
+
+area/copy:
+  - changed-files:
+      - any-glob-to-any-file: ["src/turborel/_copy/**", "tests/copy/**"]
+
+area/settings:
+  - changed-files:
+      - any-glob-to-any-file: ["src/turborel/_settings/**", "tests/settings/**"]
+
+area/pipeline:
+  - changed-files:
+      - any-glob-to-any-file: ["src/turborel/_pipeline/**", "tests/pipeline/**"]
+
+area/pool:
+  - changed-files:
+      - any-glob-to-any-file: ["src/turborel/_pool/**", "tests/pool/**"]
+
+# The public interface: the package's top-level modules, less the layers' packages.
+area/api:
+  - changed-files:
+      - any-glob-to-any-file: ["src/turborel/*.py", "src/turborel/py.typed", "src/turborel/aio/**", "tests/*.py", "tests/aio/**"]
+
+area/doc:
+  - changed-files:
+      - any-glob-to-any-file: ["doc/**", "README.md", "RULES.md", "CONFORMANCE.md", "TODO.md", "AGENTS.md", "CLAUDE.md", "CONTRIBUTING.md", "SECURITY.md", "TRADEMARK.md", "VERSIONING.md"]
+
+area/ci:
+  - changed-files:
+      - any-glob-to-any-file: [".github/**"]
+
+area/build:
+  - changed-files:
+      - any-glob-to-any-file: ["pyproject.toml", "uv.lock", ".python-version", "tools/**", "tests/tools/**", ".githooks/**", ".gitattributes", ".gitignore"]
+
+dependencies:
+  - changed-files:
+      - any-glob-to-any-file: ["pyproject.toml", "uv.lock"]

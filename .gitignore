@@ -1,0 +1,20 @@
+# Python's build output, caches and environments.
+__pycache__/
+*.py[cod]
+/build/
+/dist/
+*.egg-info/
+.venv/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+# Editors and the platform.
+.idea/
+.vscode/
+.DS_Store
+# Coding agents' local state, and live tests' data directories under it.
+.claude/

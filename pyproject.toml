@@ -1,0 +1,148 @@
+# The package, its build, and the configuration of every check
+# (RULES.md D4, D5, D6). `python -m tools.verify` runs the checks in order.
+
+[project]
+name = "turborel"
+# The number of the turborel release the driver is made for: 0.0.0, the
+# alpha, which speaks protocol version 1 (RULES.md D9, VERSIONING.md).
+version = "0.0.0"
+description = "The Python driver for turborel, over its native protocol: DB-API 2.0 and asyncio, in pure Python on the standard library."
+readme = "README.md"
+license = "BSD-2-Clause-Patent"
+license-files = ["LICENSE"]
+requires-python = ">=3.11"
+# None: the standard library alone (RULES.md R-DEP-1).
+dependencies = []
+keywords = ["database", "sql", "turborel", "dbapi", "asyncio", "driver"]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Developers",
+    "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Topic :: Database",
+    "Topic :: Database :: Front-Ends",
+    "Typing :: Typed",
+]
+
+[project.urls]
+Homepage = "https://github.com/turborel/turborel-py"
+Repository = "https://github.com/turborel/turborel-py"
+Documentation = "https://github.com/turborel/turborel-py/blob/main/doc/README.md"
+Issues = "https://github.com/turborel/turborel-py/issues"
+
+# uv's own backend, bounded to the minor release CI's uv pins (RULES.md D5).
+[build-system]
+requires = ["uv_build>=0.13.9,<0.14"]
+build-backend = "uv_build"
+
+[tool.uv]
+required-version = ">=0.13.9"
+
+# The checks' tools, pinned exactly, since a new release of a linter or a
+# type checker adds checks; Dependabot proposes each bump (RULES.md D6).
+[dependency-groups]
+dev = [
+    "coverage==7.17.3",
+    "mypy==2.4.1",
+    "pytest==9.2.0",
+    "ruff==0.17.6",
+]
+
+# --- ruff: lint and format (R-STYLE, R-SIZE, R-DOC, R-CONST) -------------
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+src = ["src", "tests", "tools"]
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    # The formatter owns these; ruff's own guidance is to leave them off
+    # when it formats.
+    "COM812",
+    "ISC001",
+    # pydocstyle's conflicting pairs: Google style chooses D211 and D212.
+    "D203",
+    "D213",
+    # LICENSE covers every file, and no file repeats it, as in turborel.
+    "CPY001",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests assert, and state their fixtures as literals (R-TEST-4, R-CONST-4).
+# Their folders are not packages: pytest imports them by path.
+"tests/**" = ["S101", "PLR2004", "INP001"]
+# The checks' runner reports to its user and runs the tools it names.
+"tools/**" = ["T201", "S603"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.pylint]
+# R-SIZE-3: at most 5 parameters.
+max-args = 5
+max-positional-args = 5
+
+[tool.ruff.lint.mccabe]
+# R-SIZE-4.
+max-complexity = 10
+
+[tool.ruff.format]
+docstring-code-format = true
+
+# --- mypy: types, strict (R-TYPE) -----------------------------------------
+
+[tool.mypy]
+files = ["src", "tests", "tools"]
+mypy_path = "src"
+strict = true
+warn_unreachable = true
+strict_bytes = true
+local_partial_types = true
+enable_error_code = [
+    "deprecated",
+    "explicit-override",
+    "ignore-without-code",
+    "mutable-override",
+    "possibly-undefined",
+    "redundant-expr",
+    "redundant-self",
+    "truthy-bool",
+    "truthy-iterable",
+    "unimported-reveal",
+    "unused-awaitable",
+]
+
+# --- pytest (R-TEST) --------------------------------------------------------
+
+[tool.pytest]
+testpaths = ["tests"]
+# `tools` is imported by its own tests from the repository's root.
+pythonpath = ["."]
+strict = true
+addopts = ["-ra", "--import-mode=importlib"]
+# A warning is a failure (R-LINT-1).
+filterwarnings = ["error"]
+
+# --- coverage (R-COV) ---------------------------------------------------------
+
+[tool.coverage.run]
+branch = true
+source_pkgs = ["turborel"]
+
+[tool.coverage.report]
+# R-COV-2: the floor, which only rises.
+fail_under = 95
+show_missing = true
+skip_covered = true
+exclude_also = ["if TYPE_CHECKING:"]

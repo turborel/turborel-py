@@ -1,0 +1,15 @@
+# Proposes each new version of the development tools and the build backend
+# (uv.lock, pyproject.toml), and of the workflows' actions, which stay
+# pinned by commit (RULES.md D6, R-CM-1).
+version: 2
+updates:
+  - package-ecosystem: "uv"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels: ["dependencies"]
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels: ["dependencies", "area/ci"]

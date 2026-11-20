@@ -1,0 +1,61 @@
+name: Conformance
+description: turborel-py departs from the protocol spec or from turborel-client.
+labels: ["conformance"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Check CONFORMANCE.md first: a row not yet done is open work, and RULES.md records the choices made for Python.
+        The protocol is turborel's doc/client/05-protocol.md; where it and turborel's code differ, the code is right.
+  - type: dropdown
+    id: reference
+    attributes:
+      label: Departs from
+      options:
+        - The native protocol (05-protocol.md)
+        - turborel-client (02-library.md, 02-library-connections.md, or its code)
+    validations:
+      required: true
+  - type: input
+    id: section
+    attributes:
+      label: The section
+      description: Its heading, as printed, e.g. "[PROTOCOL Frames]", "[CLIENT Pipelines]".
+    validations:
+      required: true
+  - type: textarea
+    id: text
+    attributes:
+      label: What it says
+      description: Quote the section, or name turborel-client's code and what it does.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Program
+      description: The smallest program that shows the departure.
+      render: python
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What the reference does
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: What turborel-py does
+      description: Its result, or its exception, SQLCODE, SQLSTATE and message.
+      render: text
+    validations:
+      required: true
+  - type: input
+    id: commit
+    attributes:
+      label: Commit
+      description: "`git rev-parse --short=12 HEAD`"
+    validations:
+      required: true
