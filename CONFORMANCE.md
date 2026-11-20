@@ -85,18 +85,18 @@ From `doc/client/05-protocol.md`, The Native Protocol.
 | P-FRAME-3 | A kind the reader does not know fails the connection (SQLCODE -919, SQLSTATE 08006) | `[PROTOCOL Frames]` | done |
 | P-FRAME-4 | A body cut short fails the connection | `[PROTOCOL Frames]` | done |
 | P-FRAME-5 | Bytes left over after a message's last field fail the connection | `[PROTOCOL Frames]` | done |
-| P-FRAME-6 | Replies taken up to 16 MiB of body unless the program says otherwise; a longer one fails the connection | `[PROTOCOL Frames]` | not yet |
+| P-FRAME-6 | Replies taken up to 16 MiB of body unless the program says otherwise; a longer one fails the connection | `[PROTOCOL Frames]` | done |
 
 ### Compressed frames
 
 | ID | Row | Citation | Status |
 |---|---|---|---|
-| P-ZFRAME-1 | A frame sent compressed as kind `z`, once `compression` is granted: the held frame's kind, its body's length, a zlib stream of the body | `[PROTOCOL Compressed frames]` | not yet |
-| P-ZFRAME-2 | A threshold of the client's own for compressing, a frame sent as it is where compressing would not shorten it | `[PROTOCOL Compressed frames]` | not yet |
-| P-ZFRAME-3 | A `z` frame received inflated to at most its `length`, itself at most the longest body taken | `[PROTOCOL Compressed frames]` | not yet |
-| P-ZFRAME-4 | A `z` frame holding another `z` frame fails the connection | `[PROTOCOL Compressed frames]` | not yet |
-| P-ZFRAME-5 | A `z` frame that inflates to another length fails the connection | `[PROTOCOL Compressed frames]` | not yet |
-| P-ZFRAME-6 | A `z` frame received when `compression` was not granted fails the connection | `[PROTOCOL Compressed frames]` | not yet |
+| P-ZFRAME-1 | A frame sent compressed as kind `z`, once `compression` is granted: the held frame's kind, its body's length, a zlib stream of the body | `[PROTOCOL Compressed frames]` | done |
+| P-ZFRAME-2 | A threshold of the client's own for compressing, a frame sent as it is where compressing would not shorten it | `[PROTOCOL Compressed frames]` | done |
+| P-ZFRAME-3 | A `z` frame received inflated to at most its `length`, itself at most the longest body taken | `[PROTOCOL Compressed frames]` | done |
+| P-ZFRAME-4 | A `z` frame holding another `z` frame fails the connection | `[PROTOCOL Compressed frames]` | done |
+| P-ZFRAME-5 | A `z` frame that inflates to another length fails the connection | `[PROTOCOL Compressed frames]` | done |
+| P-ZFRAME-6 | A `z` frame received when `compression` was not granted fails the connection | `[PROTOCOL Compressed frames]` | done |
 
 ### Values and fields
 
