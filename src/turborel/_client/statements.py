@@ -6,6 +6,7 @@ the server tells] [CLIENT Controlling the session]
 
 from __future__ import annotations
 
+import dataclasses
 from typing import TYPE_CHECKING
 
 from turborel._client.core import Core
@@ -176,3 +177,11 @@ class Statements(Core):
         """The last statement's conditions, with `conditions`."""
         completed = self._session.told.completed
         return () if completed is None else completed.conditions
+
+    def take_conditions(self) -> tuple[Failure, ...]:
+        """The last statement's conditions, taken, so each is told once."""
+        completed = self._session.told.completed
+        if completed is None:
+            return ()
+        self._session.told.completed = dataclasses.replace(completed, conditions=())
+        return completed.conditions

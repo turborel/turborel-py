@@ -48,7 +48,5 @@ manual was checked again against the code, every example run.
 
 ## M8 Parity audit
 
-- Every row of CONFORMANCE.md checked against turborel-client and the
-  spec, the coverage floor held (RULES.md D7), and this file empty.
 - Once Turborel keeps a file of sample frames beside the spec, every
   frame of it decoded, at a pinned commit.

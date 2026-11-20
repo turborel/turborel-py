@@ -26,7 +26,7 @@ conn.deallocate(statement)
 
 conn.autocommit, conn.in_transaction
 conn.rows_affected, conn.last_generated, conn.server_time
-conn.commit_position, conn.warning, conn.conditions
+conn.commit_position, conn.warning, conn.conditions, conn.take_conditions()
 ```
 
 ## DESCRIPTION
@@ -90,7 +90,7 @@ locator keeps its transaction active.
 | `server_time` | a `Timing`: `total`, `queued` and `locks`, in microseconds; None if not told | `row-counts` |
 | `commit_position` | the log position of the last commit, kept until another; None if never told | `commit-position` |
 | `warning` | the SQLSTATE of its warning, of class 01, or None | |
-| `conditions` | each condition it raised, a `Failure` | `conditions` |
+| `conditions`, `take_conditions()` | each condition it raised, a `Failure`; taken, so each is told once | `conditions` |
 
 Without `conditions` a statement's conditions come as notices, with
 `notices` ([Connections](21-connections.md)).

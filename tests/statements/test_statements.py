@@ -228,7 +228,7 @@ def test_what_the_completion_told() -> None:
     """Verifies: [CLIENT What the server tells] rows, generated values, time, position.
 
     [PROTOCOL Complete 'K'] tags 4, 6, 16 and 18; tag 17's conditions,
-    and a warning's SQLSTATE.
+    and a warning's SQLSTATE; the conditions taken, so each is told once.
     """
     condition = struct_failure()
     tail = (
@@ -246,6 +246,8 @@ def test_what_the_completion_told() -> None:
         assert conn.last_generated == ("1", "2")
         assert conn.warning == "01004"
         assert [c.sqlstate for c in conn.conditions] == ["01004"]
+        assert [c.sqlstate for c in conn.take_conditions()] == ["01004"]
+        assert (conn.conditions, conn.take_conditions()) == ((), ())
         time = conn.server_time
         assert time is not None
         assert (time.total, time.queued, time.locks) == (30, 4, 1)
