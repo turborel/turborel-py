@@ -5,7 +5,7 @@
 Every connection setting, by its name in `Options`, a URI's query and a
 service file; the environment variable that gives it, if any; what it
 says; and its default. [Settings](../user/09-settings.md) tells how the
-layers are laid. The pool's settings come at milestone M6.
+layers are laid; the pool's settings come after.
 
 | Setting | Variable | What | Default |
 |---|---|---|---|
@@ -29,3 +29,18 @@ layers are laid. The pool's settings come at milestone M6.
 | `server_name` | | the name the server's certificate is checked against | the host's |
 
 A section of a service file cannot set `service` or `service_file`.
+
+## A pool's settings
+
+The fields of `PoolConfig` ([Pools](../client/28-pools.md)), times in
+seconds, None for no limit.
+
+| Setting | What | Default |
+|---|---|---|
+| `max` | the most connections made at once, handed out and idle | 10 |
+| `max_idle` | the most kept idle | 10 |
+| `idle_timeout` | how long one may stay idle | 600, ten minutes |
+| `max_lifetime` | how long one lives from when it was made | 3600, an hour |
+| `wait` | how long `get` waits for one to come back | 30 |
+| `check` | whether an idle one is checked to answer before it is handed out | `True` |
+| `reset` | statements run, after the pool's own, as each comes back | none |
