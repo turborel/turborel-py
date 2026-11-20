@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 import pytest
 
 from turborel import (
+    DatabaseError,
     DataError,
     IntegrityError,
     InternalError,
@@ -540,7 +541,14 @@ def test_a_call_s_output_parameters(conn: Connection) -> None:
         "CREATE PROCEDURE BUMP (INOUT N INTEGER, OUT SEEN VARCHAR(5))"
         " READS SQL DATA SELECT N + MAX(K), 'X' INTO N, SEEN FROM KS"
     )
-    find = conn.prepare("CALL FIND(?, ?)")
+    try:
+        find = conn.prepare("CALL FIND(?, ?)")
+    except DatabaseError as e:
+        # The CI's nightly image may be older than turborel b56517a0, which
+        # gave a prepared CALL its output parameters; remove once it is not.
+        if "shall be a target specification" not in e.message:
+            raise
+        pytest.skip("the server predates a prepared CALL's output parameters")
     assert (len(find.parameters), [c.name for c in find.columns]) == (1, ["GOT"])
     assert rows_of(conn.execute(find, (2,))) == [(20,)]
     bump = conn.prepare("CALL BUMP(?, ?)")
