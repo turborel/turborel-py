@@ -155,7 +155,9 @@ class LobWriter(io.RawIOBase):
         """`data` added: a CLOB's octets UTF-8, a character split between writes.
 
         Raises:
-            Error: As an Append's, once a chunk is waiting.
+            Error: As an Append's, once a chunk is waiting: the server's,
+                SQLSTATE 22021 of a CLOB's octets not UTF-8, checked across
+                the Appends sent, or of an Append before refused.
         """
         octets = bytes(data)
         self._pending += octets
@@ -177,7 +179,10 @@ class LobWriter(io.RawIOBase):
 
         Raises:
             Error: The server's: SQLSTATE 22021 if a CLOB's octets are not
-                UTF-8, 22001 if it is longer than the longest.
+                UTF-8, checked across the Appends sent, or an Append before
+                was refused; 22001 if it is longer than the longest. A CLOB
+                that ends within a character is refused, 22021, where it is
+                used, as the server cannot know an Append is the last.
         """
         self.flush()
         self.close()

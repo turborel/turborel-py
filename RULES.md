@@ -57,6 +57,7 @@ Each is told in full in [§7](#7-the-decisions).
 | D12 | Docstrings in Google's style |
 | D13 | The codec keeps turborel-protocol's bounds, and refuses what it does |
 | D14 | Live tests run where TURBOREL_TEST_SERVER names turboreld's command |
+| D15 | The sample frames are a copy of Turborel's file, pinned to a commit |
 
 ---
 
@@ -68,11 +69,11 @@ Each is told in full in [§7](#7-the-decisions).
 | `uv.lock` | the development tools, locked (R-DEP-3) |
 | `.python-version` | the Python uv runs locally: 3.11, the oldest |
 | `src/turborel/__init__.py` | the package, the standard API: `connect`, PEP 249's globals, the connection and cursor, type objects, constructors and exceptions (D2) |
-| `src/turborel/_api/` | the standard API's parts: the blocking connection and cursor, what a cursor keeps of an outcome, the type objects and constructors |
+| `src/turborel/_api/` | the standard API's parts: the blocking connection and cursor, what a cursor keeps of an outcome, the type codes, type objects and constructors |
 | `src/turborel/aio.py` | `turborel.aio`, the standard API for asyncio (D2) |
 | `src/turborel/_aio/` | the asyncio interface's parts: its stream, its runner of the same requests, its client, connecting by settings |
 | `src/turborel/_errors.py` | PEP 249's exceptions, each carrying SQLCODE and SQLSTATE (D9) |
-| `src/turborel/_codec/` | the `codec` layer, without I/O: frames, fields, types and values, JSON, the tail, every message, compression (D1) |
+| `src/turborel/_codec/` | the `codec` layer, without I/O: frames, fields, types and values, a type as SQL writes it, JSON, the tail, every message, compression (D1) |
 | `src/turborel/_values.py` | the classes of values Python has no type of its own for (doc/appendix/a-types.md) |
 | `src/turborel/_auth/` | the `auth` layer: trust, password, certificate, SCRAM and its key cache |
 | `src/turborel/_tls/` | the `tls` layer: TLS contexts and the channel SCRAM binds |
@@ -87,7 +88,7 @@ Each is told in full in [§7](#7-the-decisions).
 | `src/turborel/_client/` | the low-level client's parts: a connection's core, its statements, its large objects, its copy and export, cancelling, connecting |
 | `src/turborel/client.py` | the low-level client, public: connections, statements, large objects, copy, import and export, settings, pipelines, pools, the SQL-agent, mechanisms, TLS, timeouts (D2) |
 | `src/turborel/py.typed` | says the package is typed (PEP 561) |
-| `tests/` | the tests, a folder for each layer, as `tests/codec/` for `_codec`; `tests/kit.py` the frames and peer they share |
+| `tests/` | the tests, a folder for each layer, as `tests/codec/` for `_codec`; `tests/kit.py` the frames and peer they share; `tests/codec/samples/` the copy of Turborel's sample frames and what each means (D15) |
 | `tests/server/` | the live tests and their server's set-up (D14) |
 | `tools/` | the checks tool: `verify.py` runs every check, `rules.py` and `manual.py` hold the project's own rules, `headings.py` the headings tests cite (D4, D6) |
 | `doc/` | the manual (R-DOC-7) |
@@ -580,6 +581,26 @@ CI sets the variable on Linux to run `ghcr.io/turborel/turborel:nightly`
 by Docker, on the host's network, with `/tmp` shared (R-TEST-8).
 GitHub's macOS and Windows runners have no Docker to run the image, so
 there the live tests skip, which `verify.yml` says.
+
+#### D15. The sample frames are a copy of Turborel's file, pinned to a commit
+
+Turborel's `doc/client/05-protocol-frames.tsv` holds a sample of every
+request and reply, data type and value tag [PROTOCOL Sample frames]. The
+driver keeps a copy of it, `tests/codec/samples/05-protocol-frames.tsv`,
+taken at Turborel's main commit 045e42a9, and its tests read the copy,
+so they read the same bytes on every machine, with no checkout of
+Turborel beside them. It is copied again, and the commit here changed,
+when the headings move to a later commit (D6). Reading the file from a
+checkout, skipped where there is none, was the other choice; it would
+test against whatever that checkout holds.
+
+What each sample means is written by hand, from its last field, in
+`tests/codec/samples/`: the reply each server frame decodes to, and the
+request each client frame is encoded from. Every server frame is
+decoded and every client frame encoded byte for byte, but for the
+compressed one: a zlib stream depends on its compressor, and Python's
+zlib writes another than turborel-protocol's, which inflates to the same
+frame. Its header, the frame it holds, and that frame are compared.
 
 ---
 

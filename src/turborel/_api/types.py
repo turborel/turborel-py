@@ -1,8 +1,10 @@
 """PEP 249's type objects and constructors [DESIGN] D2.
 
-A column's `type_code` in a cursor's `description` is the data type the
-server gave it; each type object compares equal to the type codes of its
-kind, as PEP 249 asks: STRING to the character string types, BINARY to
+A column's `type_code` in a cursor's `description` is a `TypeCode`: the
+data type the server gave it, and, with `declared-types` granted, the
+type it was declared with, so INTEGER is told from NUMERIC(10,0)
+[PROTOCOL Declared types]. Each type object compares equal to the type
+codes of its kind, as PEP 249 asks: STRING to the character string types, BINARY to
 the binary string types, NUMBER to the numeric types, DATETIME to the
 datetime and interval types, ROWID to a reference type.
 """
@@ -10,7 +12,8 @@ datetime and interval types, ROWID to a reference type.
 from __future__ import annotations
 
 import datetime as dt
-from typing import Final
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Final
 
 from turborel._codec.datatypes import (
     ApproximateType,
@@ -23,6 +26,37 @@ from turborel._codec.datatypes import (
     LobType,
     ReferenceType,
 )
+
+if TYPE_CHECKING:
+    from turborel._codec.composites import Column
+    from turborel._codec.datatypes import DataType
+
+
+@dataclass(frozen=True, slots=True)
+class TypeCode:
+    """A column's type, as a cursor's `description` gives it.
+
+    Its string is the type as SQL writes it, as it was declared where the
+    server told it, else as its data type says.
+    """
+
+    data_type: DataType
+    """The data type its values are written by."""
+    name: str | None
+    """Its declared type's name, as the Information Schema's DATA_TYPE
+    gives it, INTEGER or USER-DEFINED; None where the server did not tell it."""
+    written: str
+    """Its type as SQL writes it: INTEGER, DECIMAL(9,2), S.MONEY."""
+
+    @classmethod
+    def of(cls, column: Column) -> TypeCode:
+        """The type code of `column`."""
+        told = column.declared
+        return cls(column.data_type, told.name if told else None, column.type_written)
+
+    def __str__(self) -> str:
+        """Its type as SQL writes it."""
+        return self.written
 
 
 class DBAPITypeObject:
@@ -38,7 +72,9 @@ class DBAPITypeObject:
         return self.name
 
     def __eq__(self, other: object) -> bool:
-        """Whether `other` is a type code of this kind."""
+        """Whether `other` is a type code, or a data type, of this kind."""
+        if isinstance(other, TypeCode):
+            other = other.data_type
         if isinstance(other, LobType):
             return self.name == ("BINARY" if other.binary else "STRING")
         return isinstance(other, self._kinds)

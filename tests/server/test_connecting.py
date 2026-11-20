@@ -40,7 +40,7 @@ DEFAULT_ASKED = (
     "notices", "status", "diagnostics", "describe", "cursors", "ping", "reset",
     "change-user", "query-attributes", "connection-attributes", "multi-statement",
     "commit-position", "copy", "row-counts", "generated-values", "fetch-ends",
-    "conditions",
+    "conditions", "declared-types",
 )  # fmt: skip
 
 
@@ -447,7 +447,7 @@ def test_the_statuses_in_their_order(live: Live) -> None:
 
     Then the session's own settings; after a statement only what it
     changed, none of one that changed nothing, the first after login too;
-    CATALOG, the database's catalog's name.
+    CATALOG, the catalog's name, never empty, after Reset too.
     """
     conn = connect_local(live.socket, "ANN", Trust())
     names = list(conn.settings())
@@ -477,4 +477,5 @@ def test_the_statuses_in_their_order(live: Live) -> None:
     assert changed == {"SESSION.TIME_ZONE": "+04:00"}
     conn.reset()
     assert conn.setting("SESSION.TIME_ZONE") == "+00:00"
+    assert conn.setting("CATALOG") == "TURBOREL"
     conn.terminate()

@@ -92,6 +92,70 @@ def test_a_large_object_whole_or_by_its_locator(conn: Connection) -> None:
     conn.query("ROLLBACK")
 
 
+def test_large_objects_in_an_insert_of_several_rows(conn: Connection) -> None:
+    """Verifies: [CLIENT Large objects] a `?` of an INSERT's rows, its column's type.
+
+    A long BLOB and CLOB bound in a row beside a row of short literals,
+    and as several rows of marks, each stored whole.
+    """
+    conn.query("CREATE TABLE MANY (ID INTEGER, BODY CLOB(1M), DATA BLOB(1M))")
+    text, data = "x" * BIG, bytes(range(256)) * (BIG // 256)
+    conn.execute(
+        conn.prepare("INSERT INTO MANY VALUES (?, ?, ?), (2, 'short', X'0102')"),
+        (1, LargeObject(text), LargeObject(data)),
+    )
+    conn.execute(
+        conn.prepare("INSERT INTO MANY VALUES (?, ?, ?), (?, ?, ?)"),
+        (
+            3,
+            LargeObject("s"),
+            LargeObject(b"\x03"),
+            4,
+            LargeObject(text),
+            LargeObject(data),
+        ),
+    )
+    lengths = rows_of(
+        conn.query(
+            "SELECT ID, CHARACTER_LENGTH(BODY), OCTET_LENGTH(DATA)"
+            " FROM MANY ORDER BY ID"
+        )
+    )
+    assert lengths == [(1, BIG, len(data)), (2, 5, 2), (3, 1, 1), (4, BIG, len(data))]
+    conn.query("ROLLBACK")
+
+
+def test_a_clob_written_is_checked_as_utf8_as_each_append_comes(
+    conn: Connection,
+) -> None:
+    """Verifies: [PROTOCOL Lob 'L'] a CLOB's octets checked as UTF-8 at each Append.
+
+    An octet that is not UTF-8 refused with 22021 by its Append, each
+    Append after it and the CLOB's use refused too; one ending within a
+    character refused, 22021, where it is used [CLIENT Large objects].
+    """
+    conn.query("CREATE TABLE NOTES (BODY CLOB(1M))")
+    conn.query("COMMIT")
+    insert = conn.prepare("INSERT INTO NOTES VALUES (?)")
+    bad = conn.create_lob(binary=False)
+    bad.write(b"a\xff")
+    with pytest.raises(DataError) as refused:
+        bad.flush()
+    assert refused.value.sqlstate == "22021"
+    bad.write(b"b")
+    with pytest.raises(DataError) as again:
+        bad.flush()
+    assert again.value.sqlstate == "22021"
+    conn.query("ROLLBACK")
+    cut = conn.create_lob(binary=False)
+    cut.write("aé".encode()[:2])
+    held = cut.finish()
+    with pytest.raises(DataError) as used:
+        conn.execute(insert, (held,))
+    assert used.value.sqlstate == "22021"
+    conn.query("ROLLBACK")
+
+
 def test_a_locator_read_by_ranges_and_as_a_stream(conn: Connection) -> None:
     """Verifies: [CLIENT Large objects] a range by octets or characters, 256 KiB most.
 

@@ -12,7 +12,7 @@ from dataclasses import dataclass, field, replace
 from typing import TYPE_CHECKING, Final
 
 from turborel._codec import tail
-from turborel._codec.composites import Column, Parameter, read_column, read_parameter
+from turborel._codec.composites import Column, Parameter, read_columns, read_parameter
 from turborel._codec.failures import Failure, Notice, read_failure, read_notice
 from turborel._codec.fields import Reader
 from turborel._codec.values import read_row
@@ -200,7 +200,7 @@ def _ready(r: Reader) -> Ready:
 def _prepared(r: Reader) -> Prepared:
     statement = r.u32()
     parameters = tuple(r.items(read_parameter))
-    return Prepared(statement, parameters, tuple(r.items(read_column)))
+    return Prepared(statement, parameters, read_columns(r))
 
 
 def _condition(r: Reader) -> Failure:
@@ -247,7 +247,7 @@ _READERS: Final[dict[int, Callable[[Reader], Reply]]] = {
     CHALLENGE: lambda r: Challenge(r.octets()),
     READY: _ready,
     PREPARED: _prepared,
-    DESCRIPTION: lambda r: Description(tuple(r.items(read_column))),
+    DESCRIPTION: lambda r: Description(read_columns(r)),
     ROWS: lambda r: Rows(tuple(r.items(read_row))),
     SUSPENDED: lambda _: Suspended(),
     COMPLETE: _complete,

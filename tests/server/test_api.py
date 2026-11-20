@@ -28,7 +28,8 @@ def test_the_standard_api(live: Live) -> None:
     A transaction begun by the first statement, ended by commit or
     rollback; one active rolled back as the connection closes; a
     statement of parameters prepared once and executed again after a
-    reset of the session took it; type objects of the columns.
+    reset of the session took it; type objects of the columns, and type
+    codes of their declared types [PROTOCOL Declared types].
     """
     conn = turborel.connect(uri(live))
     assert isinstance(conn.client.target, Tls)
@@ -43,6 +44,12 @@ def test_the_standard_api(live: Live) -> None:
     assert [d[0] for d in cursor.description] == ["ID", "NAME"]
     assert cursor.description[0][1] == turborel.NUMBER
     assert cursor.description[1][1] == turborel.STRING
+    assert isinstance(cursor.description[0][1], turborel.TypeCode)
+    assert (cursor.description[0][1].name, str(cursor.description[0][1])) == (
+        "INTEGER",
+        "INTEGER",
+    )
+    assert cursor.description[1][1].written == "CHARACTER VARYING(10)"
     assert cursor.fetchall() == [(2, "b"), (3, "c")]
     cursor.execute("UPDATE API SET NAME = 'x' WHERE ID < ?", (3,))
     assert cursor.rowcount == 2

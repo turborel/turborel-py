@@ -58,18 +58,22 @@ it is committed as it ends.
 from turborel.client import Trust, connect
 
 conn = connect(("127.0.0.1", 7422), "ANN", Trust())
-print(
+answers = (
     conn.pipeline()
     .query("VALUES 1")
     .query("SELECT * FROM NOWHERE")
     .query("VALUES 3")
     .run()
 )
+for answer in answers:
+    print(getattr(answer, "rows", answer))
 conn.query("ROLLBACK")
 ```
 
 ```text
-[Rowset(columns=(Column(name=None, data_type=ExactType(precision=1, scale=0), not_null=False),), rows=[(1,)]), ProgrammingError('table ANN.NOWHERE is not defined'), Rowset(columns=(Column(name=None, data_type=ExactType(precision=1, scale=0), not_null=False),), rows=[(3,)])]
+[(1,)]
+table ANN.NOWHERE is not defined
+[(3,)]
 ```
 
 ## SEE ALSO

@@ -71,6 +71,16 @@ cursor's number is 0 unless `cursor` gives another, which needs
 as the server has them now; `describe_cursor` an open cursor's columns.
 Both need `describe`.
 
+**Columns.** A `Column` holds its `name`, None of a column with none,
+its `data_type`, the type its values are read by, and `not_null`. With
+`declared-types`, which connecting asks for, it holds `declared` too, a
+`Declared` of the type it was declared with: its `name`, as the
+Information Schema's DATA_TYPE gives it, and its type as SQL `written`.
+A data type stands for several declared types, so INTEGER and
+NUMERIC(10,0) are both `ExactType(precision=10, scale=0)`;
+`type_written` gives the declared type where the server told it, else
+the type its data type says, NUMERIC(10,0).
+
 **Transactions.** A transaction begins with the session's first
 statement and lasts until COMMIT or ROLLBACK. `in_transaction` says
 whether one is active, as the server said after the last request. With
@@ -124,7 +134,7 @@ conn.deallocate(statement)
 ```
 
 ```text
-(Column(name=None, data_type=ExactType(precision=1, scale=0), not_null=False),)
+(Column(name=None, data_type=ExactType(precision=1, scale=0), not_null=False, declared=Declared(name='NUMERIC', written='NUMERIC(1,0)')),)
 Batch(rows=[(2,), (3,)], more=False)
 ```
 

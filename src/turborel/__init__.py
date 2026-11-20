@@ -31,6 +31,7 @@ from turborel._api.types import (
     TimeFromTicks,
     Timestamp,
     TimestampFromTicks,
+    TypeCode,
 )
 from turborel._codec.datatypes import IntervalField, Qualifier
 from turborel._errors import (
@@ -105,6 +106,7 @@ __all__ = [
     "TimeFromTicks",
     "Timestamp",
     "TimestampFromTicks",
+    "TypeCode",
     "Warning",
     "Xml",
     "__version__",

@@ -34,6 +34,7 @@ ROW_COUNTS: Final = "row-counts"
 GENERATED_VALUES: Final = "generated-values"
 FETCH_ENDS: Final = "fetch-ends"
 CONDITIONS: Final = "conditions"
+DECLARED_TYPES: Final = "declared-types"
 
 ALL: Final = (
     NOTICES,
@@ -54,6 +55,7 @@ ALL: Final = (
     GENERATED_VALUES,
     FETCH_ENDS,
     CONDITIONS,
+    DECLARED_TYPES,
 )
 """Every capability of version 1, in the order Ready grants them."""
 

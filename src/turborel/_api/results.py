@@ -1,7 +1,8 @@
 """What a cursor keeps of an outcome, shared by the blocking and the asyncio cursor.
 
 A query's columns become PEP 249's `description`, seven items each:
-its name, its type code, a display size, an internal size, a precision,
+its name, its type code (a `TypeCode`, the type as declared where the
+server told it), a display size, an internal size, a precision,
 a scale, and whether it may be null. Its rows are kept, and fetched from
 in order. Another statement's completion gives `rowcount`, the rows it
 changed where the server told it, else -1.
@@ -12,6 +13,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Final
 
+from turborel._api.types import TypeCode
 from turborel._codec.datatypes import BinaryType, CharacterType, ExactType, LobType
 from turborel._errors import misuse
 from turborel._statements.queries import Rowset
@@ -25,7 +27,7 @@ if TYPE_CHECKING:
 ARRAYSIZE: Final = 1
 """How many rows `fetchmany` gives by default, as PEP 249 says."""
 
-Description = tuple[str, object, int | None, int | None, int | None, int | None, bool]
+Description = tuple[str, TypeCode, int | None, int | None, int | None, int | None, bool]
 """A column as PEP 249 describes it."""
 
 
@@ -36,7 +38,16 @@ def described(column: Column) -> Description:
     precision, scale = (
         (t.precision, t.scale) if isinstance(t, ExactType) else (None, None)
     )
-    return (column.name or "", t, None, internal, precision, scale, not column.not_null)
+    code = TypeCode.of(column)
+    return (
+        column.name or "",
+        code,
+        None,
+        internal,
+        precision,
+        scale,
+        not column.not_null,
+    )
 
 
 @dataclass(slots=True)

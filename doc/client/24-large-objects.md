@@ -52,7 +52,10 @@ CLOB, and gives a `LobWriter`, a binary stream. `write` adds octets, a
 CLOB's UTF-8, a character free to split between writes, sent in Appends
 of `CHUNK_OCTETS`; `flush` sends what is waiting; `finish` sends the
 rest and gives the `LobLocator`, its lengths counted, to pass as a
-parameter within its transaction. `LOB_INLINE_OCTETS` is the longest
+parameter within its transaction. The server checks a CLOB's octets as
+UTF-8 as each Append comes: an octet that is not refuses its Append,
+SQLSTATE 22021, and every Append after it and the CLOB's use; a CLOB
+that ends within a character is refused, 22021, where it is used. `LOB_INLINE_OCTETS` is the longest
 field an import sends whole for a large object column.
 
 ## ERRORS
@@ -61,7 +64,8 @@ field an import sends whole for a large object column.
 |---|---|
 | A locator no longer valid | the server's, 0F001 |
 | `free_lob` or `hold_lob` of a value held whole | -301, 22000 |
-| A CLOB written that is not UTF-8, or longer than its column | the server's, 22021 or 22001 |
+| A CLOB written that is not UTF-8, by the Append that sends it and each after, or one ending within a character, where it is used | the server's, 22021 |
+| A CLOB written longer than its column | the server's, 22001 |
 | A reply out of turn | -919, 08006, the connection lost |
 | A server that sent less of a value than its length, to a `LobReader` | -919, 08006; the connection goes on |
 

@@ -36,6 +36,7 @@ from turborel._client.connect import (
 )
 from turborel._client.connection import Connection
 from turborel._client.lobs import Lob, LobReader, LobWriter
+from turborel._codec.composites import Column, Declared
 from turborel._codec.failures import Diagnostics, Failure, Notice
 from turborel._codec.replies import Complete, Timing
 from turborel._copy.copying import CHUNK_BYTES
@@ -135,10 +136,12 @@ __all__ = [
     "Canceller",
     "Certificate",
     "ChannelBinding",
+    "Column",
     "Complete",
     "Connection",
     "Connector",
     "Copying",
+    "Declared",
     "Delimited",
     "Diagnostics",
     "Dialect",

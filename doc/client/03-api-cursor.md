@@ -33,8 +33,9 @@ pipeline: it stops at the first failure, which it raises, the
 executions after it undone, those before kept in the transaction.
 
 **description** gives a query's columns, seven items each: the name,
-the type code, the data type the server gave it, which the module's
-type objects compare with, a display size, None, an internal size, the
+the type code, a `TypeCode` of the data type the server gave it and the
+type it was declared with, which the module's type objects compare with
+([The turborel Module](01-api-module.md)), a display size, None, an internal size, the
 length of a string type, the precision and scale of an exact numeric
 type, and whether it may be null; None of a statement not a query.
 **rowcount** is the rows a query gave, or a statement changed, as the

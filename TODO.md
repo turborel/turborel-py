@@ -48,5 +48,6 @@ manual was checked again against the code, every example run.
 
 ## M8 Parity audit
 
-- Once Turborel keeps a file of sample frames beside the spec, every
-  frame of it decoded, at a pinned commit.
+Nothing is open: every row M8 names is done, the sample frames among
+them, each decoded or encoded as the file says at Turborel's main commit
+045e42a9.

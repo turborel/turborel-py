@@ -19,6 +19,7 @@ Timestamp(year, month, day, hour, minute, second)
 DateFromTicks(ticks) | TimeFromTicks(ticks) | TimestampFromTicks(ticks)
 Binary(data)
 STRING | BINARY | NUMBER | DATETIME | ROWID
+TypeCode(data_type, name, written)
 
 Warning, Error, InterfaceError, DatabaseError, DataError, OperationalError,
 IntegrityError, InternalError, ProgrammingError, NotSupportedError
@@ -39,8 +40,12 @@ connections. `paramstyle` is `"qmark"`: a parameter is `?`, as SQL's
 dynamic parameters are, so a statement goes to the server as written.
 
 **Type objects.** A column's type code, in a cursor's `description`, is
-the data type the server gave it. Each type object compares equal to
-the type codes of its kind: `STRING` to the character string types,
+a `TypeCode`: its `data_type`, the type its values are read by; its
+declared type's `name`, as the Information Schema's DATA_TYPE gives it,
+INTEGER or DECIMAL, None where the server did not tell it; and its type
+as SQL `written`, which is also its string, INTEGER where it was
+declared so, else as its data type says, NUMERIC(10,0). Each type object
+compares equal to the type codes of its kind: `STRING` to the character string types,
 CHARACTER, CHARACTER VARYING and CLOB; `BINARY` to the binary string
 types, BINARY, BINARY VARYING and BLOB; `NUMBER` to the exact,
 approximate and decimal floating-point types; `DATETIME` to DATE, TIME,
