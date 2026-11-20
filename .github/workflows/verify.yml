@@ -40,6 +40,14 @@ jobs:
           python-version: ${{ matrix.python }}
       - name: The environment uv.lock pins
         run: uv sync --locked
+      - name: The live tests' server, Turborel's nightly image
+        # On Linux alone: the image is Linux's, and GitHub's macOS and
+        # Windows runners have no Docker to run it, so there the live tests
+        # skip and the codec and session tests run alone (RULES.md R-TEST-8).
+        if: runner.os == 'Linux'
+        run: |
+          docker pull ghcr.io/turborel/turborel:nightly
+          echo "TURBOREL_TEST_SERVER=docker run --rm -i --network host -v /tmp:/tmp --user $(id -u):$(id -g) ghcr.io/turborel/turborel:nightly" >> "$GITHUB_ENV"
       - name: Every check
         timeout-minutes: 30
         run: uv run --locked python -m tools.verify
@@ -56,5 +64,13 @@ jobs:
           python-version: "3.15"
       - name: The environment uv.lock pins
         run: uv sync --locked
+      - name: The live tests' server, Turborel's nightly image
+        # On Linux alone: the image is Linux's, and GitHub's macOS and
+        # Windows runners have no Docker to run it, so there the live tests
+        # skip and the codec and session tests run alone (RULES.md R-TEST-8).
+        if: runner.os == 'Linux'
+        run: |
+          docker pull ghcr.io/turborel/turborel:nightly
+          echo "TURBOREL_TEST_SERVER=docker run --rm -i --network host -v /tmp:/tmp --user $(id -u):$(id -g) ghcr.io/turborel/turborel:nightly" >> "$GITHUB_ENV"
       - name: Every check, and the coverage floor
         run: uv run --locked python -m tools.verify --coverage

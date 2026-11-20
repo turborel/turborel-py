@@ -56,6 +56,7 @@ Each is told in full in [§7](#7-the-decisions).
 | D11 | ruff, mypy in strict mode, pytest and coverage.py, pinned |
 | D12 | Docstrings in Google's style |
 | D13 | The codec keeps turborel-protocol's bounds, and refuses what it does |
+| D14 | Live tests run where TURBOREL_TEST_SERVER names turboreld's command |
 
 ---
 
@@ -68,16 +69,24 @@ Each is told in full in [§7](#7-the-decisions).
 | `.python-version` | the Python uv runs locally: 3.11, the oldest |
 | `src/turborel/__init__.py` | the package: its docstring, PEP 249's globals and exceptions (D2) |
 | `src/turborel/_errors.py` | PEP 249's exceptions, each carrying SQLCODE and SQLSTATE (D9) |
-| `src/turborel/_codec/` | the `codec` layer, without I/O: the frame header, the fields (D1) |
+| `src/turborel/_codec/` | the `codec` layer, without I/O: frames, fields, types and values, JSON, the tail, every message, compression (D1) |
+| `src/turborel/_values.py` | the classes of values Python has no type of its own for (doc/appendix/a-types.md) |
+| `src/turborel/_auth/` | the `auth` layer: trust, password, certificate, SCRAM and its key cache |
+| `src/turborel/_tls/` | the `tls` layer: TLS contexts and the channel SCRAM binds |
+| `src/turborel/_transport/` | the `transport` layer: TCP, Unix sockets, named pipes, timeouts |
+| `src/turborel/_session/` | the `session` layer: each request as steps without I/O, the session's state, and the blocking runner |
+| `src/turborel/client.py` | the low-level client, public: connections, mechanisms, TLS, timeouts (D2) |
 | `src/turborel/py.typed` | says the package is typed (PEP 561) |
-| `tests/` | the tests, a folder for each layer, as `tests/codec/` for `_codec` |
+| `tests/` | the tests, a folder for each layer, as `tests/codec/` for `_codec`; `tests/kit.py` the frames and peer they share |
+| `tests/server/` | the live tests and their server's set-up (D14) |
 | `tools/` | the checks tool: `verify.py` runs every check, `rules.py` and `manual.py` hold the project's own rules, `headings.py` the headings tests cite (D4, D6) |
 | `doc/` | the manual (R-DOC-7) |
 
-Each layer of D1 becomes a private package of `turborel` as its
+Each layer of D1 is a private package of `turborel`, added as its
 milestone begins: `_codec`, `_transport`, `_auth`, `_tls`, `_session`,
 `_statements`, `_lobs`, `_copy`, `_settings`, `_pipeline` and `_pool`.
-The public interface is `turborel` and, from M7, `turborel.aio`.
+The public interface is `turborel`, the low-level client
+`turborel.client`, and, from M7, `turborel.aio`.
 
 ---
 
@@ -286,7 +295,11 @@ the other. Each layer is a commit area of CONTRIBUTING.md.
 | `api` | the standard API (D2) | the language's own |
 
 In turborel-py each layer is a private package of `turborel`, named for
-its commit area: `turborel._codec`, `turborel._transport` and so on. TLS,
+its commit area: `turborel._codec`, `turborel._transport` and so on. A
+request is a generator of the frames it sends and the replies it waits
+for (`_session/ops.py`), so one implementation serves the blocking
+connection and the asyncio one; `turborel.client` is the low-level
+client's public interface. TLS,
 the hashes SCRAM needs and zlib come from the standard library's `ssl`,
 `hashlib`, `hmac` and `zlib`. The `ssl` module gives no `tls-exporter`,
 so SCRAM-SHA-256-PLUS binds the channel by `tls-server-end-point` alone,
@@ -502,6 +515,25 @@ hold is a `DataError` (SQLSTATE 22003), a value of no type the protocol
 carries a `ProgrammingError` (07006), parts nested past the bound a
 `NotSupportedError` (0A000), and an argument of a request out of its
 field's range an `InterfaceError` (Turborel's TB910).
+
+#### D14. Live tests run where TURBOREL_TEST_SERVER names turboreld's command
+
+The live tests, in `tests/server/`, run every request and capability
+against a real server, and run only where the environment variable
+TURBOREL_TEST_SERVER names the command that runs `turboreld`, as shell
+words, so the unit tests stay deterministic and need no server
+(R-TEST-5). Their set-up makes its own certificates with `openssl`
+(TURBOREL_TEST_OPENSSL, else the one on the path), so no secret is ever
+committed, and starts one server for the session, held in memory, on
+loopback port 17431 (TURBOREL_TEST_PORT) and on a Unix socket under a
+directory of its own, with TLS, its client authority, local trust,
+SCRAM without TLS too, no delay after a failed login and few PBKDF2
+iterations; it stops the server at the end, by its own process.
+
+CI sets the variable on Linux to run `ghcr.io/turborel/turborel:nightly`
+by Docker, on the host's network, with `/tmp` shared (R-TEST-8).
+GitHub's macOS and Windows runners have no Docker to run the image, so
+there the live tests skip, which `verify.yml` says.
 
 ---
 

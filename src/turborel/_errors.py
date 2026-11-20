@@ -201,3 +201,20 @@ def misuse(message: str) -> InterfaceError:
         The error to raise.
     """
     return InterfaceError(message, sqlcode=API_SQLCODE, sqlstate=API_SQLSTATE)
+
+
+# The exceptions are the module `turborel`'s, as PEP 249 has them, so a
+# traceback names them as a program imports them.
+for _exception in (
+    Warning,
+    Error,
+    InterfaceError,
+    DatabaseError,
+    DataError,
+    OperationalError,
+    IntegrityError,
+    InternalError,
+    ProgrammingError,
+    NotSupportedError,
+):
+    _exception.__module__ = "turborel"

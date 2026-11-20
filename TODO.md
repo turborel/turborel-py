@@ -23,22 +23,11 @@ Nothing is open: every row M1 names is done.
 
 ## M2 Connect
 
-- Transport: P-INTRO-1 to P-INTRO-3, C-CONN-1 to C-CONN-3, and the
-  C-TIME rows.
-- Logging in: the P-OPEN and P-MECH rows, P-INTRO-4, P-HELLO-2,
-  P-READY-2, P-ERROR-2, C-CONN-4, C-CONN-5, C-CONN-8, C-CONN-10,
-  C-CONN-11 and C-CONN-13.
-- TLS: C-CONN-6, C-CONN-7, C-CONN-9 and C-CONN-12, by the language's
-  own TLS.
-- Capabilities and status: P-CAP-2, P-CAP-10, P-CAP-12, P-CAP-19,
-  P-STATUS-2 to P-STATUS-10, the C-ASK rows and C-TOLD-1.
-- The SCRAM key cache: C-KEY-1 and C-KEY-3 to C-KEY-8.
-- Ending: P-CANCEL-1, P-CANCEL-2, P-TERM-1, C-CONN-14 and C-RUN-6.
-- The live tests' server set-up, with test certificates, SCRAM users and
-  SERVER.TRUST_LOCAL, on `ghcr.io/turborel/turborel:nightly` in CI
-  (R-TEST-8).
-- The manual: the User's Guide's chapter Connecting and the API
-  Reference's page of connections.
+- `tls-exporter`: P-MECH-6, and C-CONN-6's binding by `tls-exporter` over
+  TLS 1.3. Python's `ssl` exports no keying material (RULES.md D1), so
+  the driver binds SCRAM-SHA-256-PLUS by `tls-server-end-point`, which
+  the server takes over TLS 1.3 too. These rows wait on the owner's
+  decision: a dependency that exports it, or a Python whose `ssl` does.
 
 ## M3 Statements
 

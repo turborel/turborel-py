@@ -29,6 +29,8 @@ uv run python -m tools.verify               # every check a change must pass
 uv run python -m tools.verify --coverage    # and the coverage floor, as CI holds it
 uv run --python 3.15 python -m tools.verify # the same, on another supported Python
 uv run pytest tests/codec                   # some tests alone
+TURBOREL_TEST_SERVER=turboreld uv run pytest tests/server
+                                            # the live tests, against a server they start (D14)
 uv build                                    # the sdist and the wheel, in dist/
 ```
 
@@ -48,16 +50,24 @@ Project automation is the language's own tooling, never shell scripts
 | `.python-version` | the Python uv runs locally: 3.11, the oldest |
 | `src/turborel/__init__.py` | the package: its docstring, PEP 249's globals and exceptions (D2) |
 | `src/turborel/_errors.py` | PEP 249's exceptions, each carrying SQLCODE and SQLSTATE (D9) |
-| `src/turborel/_codec/` | the `codec` layer, without I/O: the frame header, the fields (D1) |
+| `src/turborel/_codec/` | the `codec` layer, without I/O: frames, fields, types and values, JSON, the tail, every message, compression (D1) |
+| `src/turborel/_values.py` | the classes of values Python has no type of its own for (doc/appendix/a-types.md) |
+| `src/turborel/_auth/` | the `auth` layer: trust, password, certificate, SCRAM and its key cache |
+| `src/turborel/_tls/` | the `tls` layer: TLS contexts and the channel SCRAM binds |
+| `src/turborel/_transport/` | the `transport` layer: TCP, Unix sockets, named pipes, timeouts |
+| `src/turborel/_session/` | the `session` layer: each request as steps without I/O, the session's state, and the blocking runner |
+| `src/turborel/client.py` | the low-level client, public: connections, mechanisms, TLS, timeouts (D2) |
 | `src/turborel/py.typed` | says the package is typed (PEP 561) |
-| `tests/` | the tests, a folder for each layer, as `tests/codec/` for `_codec` |
+| `tests/` | the tests, a folder for each layer, as `tests/codec/` for `_codec`; `tests/kit.py` the frames and peer they share |
+| `tests/server/` | the live tests and their server's set-up (D14) |
 | `tools/` | the checks tool: `verify.py` runs every check, `rules.py` and `manual.py` hold the project's own rules, `headings.py` the headings tests cite (D4, D6) |
 | `doc/` | the manual (R-DOC-7) |
 
-Each layer of D1 becomes a private package of `turborel` as its
+Each layer of D1 is a private package of `turborel`, added as its
 milestone begins: `_codec`, `_transport`, `_auth`, `_tls`, `_session`,
 `_statements`, `_lobs`, `_copy`, `_settings`, `_pipeline` and `_pool`.
-The public interface is `turborel` and, from M7, `turborel.aio`.
+The public interface is `turborel`, the low-level client
+`turborel.client`, and, from M7, `turborel.aio`.
 
 The protocol is Turborel's `doc/client/05-protocol.md`, the client's
 features `doc/client/02-library.md` and `02-library-connections.md`, and

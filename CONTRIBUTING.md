@@ -46,6 +46,8 @@ uv run python -m tools.verify               # every check a change must pass
 uv run python -m tools.verify --coverage    # and the coverage floor, as CI holds it
 uv run --python 3.15 python -m tools.verify # the same, on another supported Python
 uv run pytest tests/codec                   # some tests alone
+TURBOREL_TEST_SERVER=turboreld uv run pytest tests/server
+                                            # the live tests, against a server they start (D14)
 uv build                                    # the sdist and the wheel, in dist/
 ```
 

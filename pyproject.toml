@@ -111,7 +111,9 @@ docstring-code-format = true
 
 [tool.mypy]
 files = ["src", "tests", "tools"]
-mypy_path = "src"
+mypy_path = ["src", "tests/server"]
+# Module names from their paths, so each folder's conftest.py is its own.
+explicit_package_bases = true
 strict = true
 # `explicit-override` is left off: `typing.override` came in 3.12, and the
 # driver supports 3.11 on the standard library alone (RULES.md D3).
@@ -135,8 +137,9 @@ enable_error_code = [
 
 [tool.pytest]
 testpaths = ["tests"]
-# `tools` is imported by its own tests from the repository's root.
-pythonpath = ["."]
+# `tools` is imported by its own tests from the repository's root, and the
+# live tests' `live` from their folder.
+pythonpath = [".", "tests/server"]
 strict = true
 addopts = ["-ra", "--import-mode=importlib"]
 # A warning is a failure (R-LINT-1).
