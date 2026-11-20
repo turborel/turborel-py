@@ -76,7 +76,8 @@ The failures the driver raises itself:
 | A value past the protocol's limits: nested deeper than 16, a multiset of more than 65 535 elements, a JSON value past 128 levels or 256 MiB | `NotSupportedError` | -900, 0A000 |
 | A large object held whole freed or held as if by its locator | `DataError` | -301, 22000 |
 | An import's input that cannot be read ([Copy, Import and Export](25-copy.md)) | `ImportFailure` | -301, 22000 |
-| An interface used wrongly: a field given a number it cannot hold, too many attributes, a request while a copy is under way | `InterfaceError` | -910, TB910 |
+| Attributes past their bounds: more than 32, a name not 1 to 64 bytes, a value past 1024, before anything is sent | `OperationalError` | -919, 08006 |
+| An interface used wrongly: a field given a number it cannot hold, a request while a copy is under way | `InterfaceError` | -910, TB910 |
 
 ## EXAMPLES
 

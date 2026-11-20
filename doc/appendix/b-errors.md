@@ -58,7 +58,7 @@ SQLCODE -919 and SQLSTATE 08006, ends the connection too.
 
 | SQLSTATE | SQLCODE | Exception | When |
 |---|---|---|---|
-| 08006 | -919 | `OperationalError` | the server cannot be reached; a TLS handshake fails; a wait runs out; a reply cannot be read, is out of turn or is too long; a capability not granted is needed |
+| 08006 | -919 | `OperationalError` | the server cannot be reached; a TLS handshake fails; a wait runs out; a reply cannot be read, is out of turn or is too long; a capability not granted is needed; attributes past their bounds |
 | 28000 | -919 | `OperationalError` | a password, or SCRAM, would go over plain TCP |
 | 22000 | -301 | `DataError` | a value of a type the protocol cannot carry |
 | 22003 | -301 | `DataError` | a number its field cannot hold |

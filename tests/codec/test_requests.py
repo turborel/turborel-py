@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from turborel import InterfaceError
+from turborel import InterfaceError, OperationalError
 from turborel._codec.requests import (
     Answer,
     Cancel,
@@ -194,10 +194,11 @@ def test_attributes_past_their_bounds_are_refused(
 ) -> None:
     """Verifies: [PROTOCOL The tail] at most 32 attributes, names 1 to 64 bytes.
 
-    A value of at most 1024; the server fails the connection for more, so
-    the driver refuses it before sending, SQLSTATE TB910.
+    A value of at most 1024; the server fails the connection for more,
+    with SQLCODE -919 and SQLSTATE 08006, so the driver refuses it with
+    them before sending.
     """
     assert Query("X", attributes=[("N" * 64, "v" * 1024)] * 32).encode()
-    with pytest.raises(InterfaceError) as failure:
+    with pytest.raises(OperationalError) as failure:
         Query("X", attributes=attributes).encode()
-    assert failure.value.sqlstate == "TB910"
+    assert (failure.value.sqlcode, failure.value.sqlstate) == (-919, "08006")

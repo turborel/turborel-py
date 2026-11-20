@@ -16,7 +16,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, Final
 
-from turborel._errors import misuse
+from turborel._errors import connection_failure
 
 if TYPE_CHECKING:
     from turborel._codec.fields import Reader, Writer
@@ -84,15 +84,16 @@ def write_attributes(w: Writer, attributes: Attributes) -> None:
     """Tag 1 and `attributes`, unless there are none.
 
     Raises:
-        InterfaceError: SQLSTATE TB910, of more than 32, a name not 1 to
-            64 bytes, or a value of more than 1024: the server would fail
-            the connection for it.
+        OperationalError: SQLCODE -919, SQLSTATE 08006, of more than 32, a
+            name not 1 to 64 bytes, or a value of more than 1024: the code
+            the server would fail the connection with, refused before it is
+            sent, the connection kept.
     """
     if not attributes:
         return
     if len(attributes) > MAX_ATTRIBUTES:
         msg = f"{len(attributes)} attributes are more than the {MAX_ATTRIBUTES} taken"
-        raise misuse(msg)
+        raise connection_failure(msg)
     w.u8(ATTRIBUTES)
     w.u32(len(attributes))
     for name, value in attributes:
@@ -105,7 +106,7 @@ def write_attributes(w: Writer, attributes: Attributes) -> None:
                 f"an attribute's name is 1 to {MAX_ATTRIBUTE_NAME} bytes"
                 f" and its value at most {MAX_ATTRIBUTE_VALUE}"
             )
-            raise misuse(msg)
+            raise connection_failure(msg)
         w.string(name)
         w.string(value)
 
