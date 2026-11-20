@@ -1,5 +1,5 @@
 # Every check a change must pass (RULES.md R-PROC-1), on each platform and
-# each Python the driver supports (D3, D11), plus the coverage floor
+# each Python the driver supports (D3, D4), plus the coverage floor
 # (R-COV). uv installs each Python and the tools uv.lock pins. Actions are
 # pinned by their full commit, the version in a comment.
 name: verify

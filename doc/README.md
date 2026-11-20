@@ -1,25 +1,27 @@
 # The turborel-py Documentation Set
 
 turborel-py is the Python driver for Turborel, a relational database
-system. It connects a Python program to a Turborel server, `turboreld`,
-over the server's native protocol, version 1, spoken in pure Python on
-the standard library. Its interface is to be DB-API 2.0 (PEP 249), with
-`?` parameters, and an asyncio interface beside it, and it is built to
-do all that Turborel's own client library does. This set of manuals
-describes it for those who write programs with it.
+system. It connects a Python program to a Turborel server,
+`turboreld`, over Turborel's native protocol, version 1, which it speaks
+itself, in pure Python on the standard library, with nothing to compile. Its standard interface is DB-API 2.0 (PEP 249), with `?` parameters, and an asyncio interface beside it, `turborel.aio`, over a
+low-level client built to do all that Turborel's own client library
+does. This set of manuals describes it for those who write programs with
+it. The SQL a program sends, and the server, are described in Turborel's
+own manuals,
+[The Turborel Documentation Set](https://github.com/turborel/turborel/blob/main/doc/README.md).
 
 turborel-py is in alpha: what these manuals describe may change in any
-release until 1.0.0 ([Versions](appendix/d-versions.md)). The driver
-does not connect to a server yet, and its chapters are written as the
-parts they describe are built. Each change updates the pages it touches,
-so the manuals describe the release they come with.
+release until 1.0.0 ([Versions](appendix/d-versions.md)). The driver is
+built in milestones, and until a chapter's milestone lands, the chapter
+says what it will cover. Each change updates the pages it touches, so
+the manuals describe the release they come with.
 
 ## The volumes
 
 | Volume | For | |
 |---|---|---|
-| [I. User's Guide](user/README.md) | Anyone who writes a Python program against Turborel | Installing, connecting, statements, transactions, large objects, copying, pipelines and pools, settings and errors, chapter by chapter |
-| [II. API Reference](client/README.md) | The same, looking something up | The standard API and the low-level client, a page for each main interface or module |
+| [I. User's Guide](user/README.md) | Anyone who writes a Python program against Turborel | Installing, connecting, queries, prepared statements, transactions, large objects, copying, pipelines and pools, settings and errors, chapter by chapter |
+| [II. API Reference](client/README.md) | The same, looking something up | The standard API, then the low-level client, a page for each main interface or module |
 | [Appendices](appendix/README.md) | Everyone | Types, errors, settings and versions |
 
 Read the User's Guide from the start to learn the driver; turn to the
@@ -27,12 +29,12 @@ API Reference and the appendices to look a thing up.
 
 ## Conventions
 
-**Examples** of Python and SQL are set in a fixed-width font. SQL key
-words are in upper case, names in upper case unless delimited, as the
-standard folds them:
+**Examples** of Python and of SQL are set in a fixed-width font.
+SQL key words are in upper case, names in upper case unless delimited,
+as the standard folds them, and a dynamic parameter is `?`:
 
-```python
-cur.execute("SELECT NAME, SALARY FROM STAFF WHERE SALARY > ?", (50000,))
+```sql
+SELECT NAME, SALARY FROM STAFF WHERE SALARY > ?
 ```
 
 **Results** of examples follow them, as the program prints them.
@@ -45,7 +47,23 @@ library chapters,
 [The Client Library](https://github.com/turborel/turborel/blob/main/doc/client/02-library.md)
 and
 [Settings, Pipelines and Pools](https://github.com/turborel/turborel/blob/main/doc/client/02-library-connections.md).
+The rows each page fulfils are those of the driver's parity matrix,
+[CONFORMANCE.md](https://github.com/turborel/turborel-py/blob/main/CONFORMANCE.md).
 
-**Errors** are given by SQLSTATE, the code the standard defines, and
-SQLCODE, the older number; [Appendix B](appendix/b-errors.md) maps them
-to the driver's exceptions.
+**Errors** are given by SQLSTATE, the code the SQL standard defines, and
+SQLCODE, the older number, as Turborel gives them;
+[Appendix B](appendix/b-errors.md) maps them to the driver's error.
+
+### Pages of reference
+
+A page of the API Reference has these sections, in this order:
+
+- **NAME**: the interface, class, module or function, and what it does
+  in a line.
+- **SYNOPSIS**: its declaration, in Python.
+- **DESCRIPTION**: what it does.
+- **ERRORS**: each way it fails, by SQLSTATE.
+- **EXAMPLES**: programs, and what they print.
+- **STANDARD**: the sections of Turborel's documents it follows, and,
+  for the standard API, the specification of the interface.
+- **SEE ALSO**: related pages.

@@ -3,7 +3,8 @@
 Taken from turborel's doc/client/05-protocol.md (`PROTOCOL`), and from
 02-library.md and 02-library-connections.md (`CLIENT`), at main's commit
 e4f08f77. A heading the documents rename or add is changed here in the
-same commit as the code that follows it (RULES.md R-TRACE-2).
+same commit as the code that follows it (RULES.md D6, R-TRACE-2). Each
+document's title, its first heading, is one of its headings too.
 """
 
 from __future__ import annotations
@@ -12,6 +13,7 @@ from typing import Final
 
 PROTOCOL: Final = frozenset(
     {
+        "The Native Protocol",
         "Frames",
         "Compressed frames",
         "Values and fields",
@@ -63,6 +65,7 @@ PROTOCOL: Final = frozenset(
 CLIENT: Final = frozenset(
     {
         # 02-library.md
+        "The Client Library",
         "Connecting",
         "Timeouts",
         "Running statements",
@@ -77,6 +80,7 @@ CLIENT: Final = frozenset(
         "Copying and exporting",
         "The SQL-agent",
         # 02-library-connections.md
+        "Settings, Pipelines and Pools",
         "Connecting by settings",
         "Where settings come from",
         "The connection URI",

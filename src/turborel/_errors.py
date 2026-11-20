@@ -3,7 +3,7 @@
 Every failure the driver raises is one of these (RULES.md R-ERR-1). Each
 carries the SQLCODE, the SQLSTATE and the message the server, or the
 driver acting as turborel-client does, gave it, so a program decides by
-the SQLSTATE rather than by the exception's class alone (RULES.md D7).
+the SQLSTATE rather than by the exception's class alone (RULES.md D9).
 """
 
 from __future__ import annotations

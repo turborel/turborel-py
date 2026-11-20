@@ -1,10 +1,10 @@
 # The package, its build, and the configuration of every check
-# (RULES.md D4, D5, D6). `python -m tools.verify` runs the checks in order.
+# (RULES.md D4, D10, D11). `python -m tools.verify` runs the checks in order.
 
 [project]
 name = "turborel"
 # The number of the turborel release the driver is made for: 0.0.0, the
-# alpha, which speaks protocol version 1 (RULES.md D9, VERSIONING.md).
+# alpha, which speaks protocol version 1 (RULES.md D5, VERSIONING.md).
 version = "0.0.0"
 description = "The Python driver for turborel, over its native protocol: DB-API 2.0 and asyncio, in pure Python on the standard library."
 readme = "README.md"
@@ -39,7 +39,7 @@ Repository = "https://github.com/turborel/turborel-py"
 Documentation = "https://github.com/turborel/turborel-py/blob/main/doc/README.md"
 Issues = "https://github.com/turborel/turborel-py/issues"
 
-# uv's own backend, bounded to the minor release CI's uv pins (RULES.md D5).
+# uv's own backend, bounded to the minor release CI's uv pins (RULES.md D10).
 [build-system]
 requires = ["uv_build>=0.13.9,<0.14"]
 build-backend = "uv_build"
@@ -48,7 +48,7 @@ build-backend = "uv_build"
 required-version = ">=0.13.9"
 
 # The checks' tools, pinned exactly, since a new release of a linter or a
-# type checker adds checks; Dependabot proposes each bump (RULES.md D6).
+# type checker adds checks; Dependabot proposes each bump (RULES.md D11).
 [dependency-groups]
 dev = [
     "coverage==7.17.3",
@@ -79,7 +79,7 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-# Tests assert, and state their fixtures as literals (R-TEST-4, R-CONST-4).
+# Tests assert, and state their fixtures as literals (R-TEST-4, R-CONST-5).
 # Their folders are not packages: pytest imports them by path.
 "tests/**" = ["S101", "PLR2004", "INP001"]
 # The checks' runner reports to its user and runs the tools it names.
@@ -94,7 +94,7 @@ max-args = 5
 max-positional-args = 5
 
 [tool.ruff.lint.mccabe]
-# R-SIZE-4.
+# R-SIZE-5: a function's complexity, here at most 10.
 max-complexity = 10
 
 [tool.ruff.format]

@@ -2,7 +2,8 @@
 
 [Contents](README.md)
 
-This chapter will tell how a program runs statements and reads their
-rows, a batch at a time, and what a statement's completion tells: the
-rows it affected, the values it generated, the server's time and its
-conditions. It is filled at milestone M3.
+This chapter will tell how a program runs a statement and reads its
+rows, a batch at a time as they come, with the columns' types and the
+values the driver gives for each, and what a statement's completion
+tells: the rows it changed, the values it generated, the server's time.
+It is filled at milestone M3.

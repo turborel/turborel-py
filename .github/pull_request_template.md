@@ -39,5 +39,5 @@ the numbers. Otherwise "none claimed". -->
 - [ ] One logical change per commit, each passing `python -m tools.verify`
 - [ ] The spec or turborel-client cited in the code (R-DOC-4) and in the tests (`Verifies:`, R-TRACE-1)
 - [ ] Normal and robustness tests with exact SQLCODE and SQLSTATE (R-TEST-2), a failing-first test for a fix (R-TEST-6)
-- [ ] Every failure the driver's exception (R-ERR), no secret in a message or `repr` (R-SAFE-2), no new dependency without a decision (R-DEP-1)
+- [ ] Every failure the driver's exception (R-ERR), no secret in a message or `repr` (R-SAFE-4), no new dependency without a decision (R-DEP-1)
 - [ ] CONFORMANCE.md, RULES.md, TODO.md and doc/ updated where they change

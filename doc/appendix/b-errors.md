@@ -2,7 +2,12 @@
 
 [Contents](README.md)
 
-This appendix will map each SQLSTATE class to the exception the driver
-raises for it, under PEP 249's hierarchy. A connection failure, SQLCODE
--919 and SQLSTATE 08006, is an `OperationalError` already; the rest is
-filled at milestone M3.
+This appendix will list the SQLSTATE classes the driver reports, those
+it raises itself, such as SQLCODE -919 and SQLSTATE 08006 for a
+connection whose messages cannot be read, and those the server sends,
+how each reaches a program as the driver's error, and which end the
+connection. It is filled at milestone M3.
+
+In Python a connection whose messages cannot be read raises
+`turborel.OperationalError`, of SQLCODE -919 and SQLSTATE 08006,
+already.

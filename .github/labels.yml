@@ -77,7 +77,7 @@
   description: "pyproject.toml, uv.lock, tools/, .githooks/"
 - name: "dependencies"
   color: "#0366d6"
-  description: "A dependency or a tool's version changes (R-DEP-1, R-CM-1)"
+  description: "A dependency or a tool's version changes (R-DEP-1, R-DEP-3)"
 
 # Triage
 - name: "duplicate"

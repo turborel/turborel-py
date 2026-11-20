@@ -4,111 +4,120 @@ How to work on turborel-py as a coding agent, with any tool. If this file
 disagrees with [RULES.md](RULES.md) or [CONTRIBUTING.md](CONTRIBUTING.md),
 follow those.
 
-turborel-py is the Python driver for turborel, a relational database
-system. It speaks turborel's native protocol, version 1, in pure Python
-on the standard library, and is built to do all turborel-client does.
-See [README.md](README.md).
+turborel-py is the Python driver for Turborel, a relational
+database system. It speaks Turborel's native protocol, version 1,
+itself, in pure Python on the standard library, with nothing to compile, and is built to do all turborel-client does. See
+[README.md](README.md).
 
 ## Before you change anything
 
-Read RULES.md §3 (code), §4 (tests), §7 (process) and the §1 decisions
-for your area. Read CONTRIBUTING.md for how a change is made and the
-extra checks for changes that touch the protocol. Read the section of
-the protocol, or of the client documents, that your change implements.
+Read RULES.md §3 (code), §4 (tests), §6 (process) and the decisions for
+your area. Read CONTRIBUTING.md for how a change is made and the extra
+checks for changes that touch the protocol. Read the section of the
+protocol, or of the client documents, that your change implements, and
+the rows of CONFORMANCE.md it marks done.
 
 ## Build and check
 
-Every change must pass `python -m tools.verify --coverage` before it is
-handed back.
+Every change must pass `uv run python -m tools.verify` and `uv run python -m tools.verify --coverage`
+before it is handed back.
 
 ```
-uv sync --locked                          # the environment, as uv.lock pins it
-uv run python -m tools.verify             # every check a change must pass
-uv run python -m tools.verify --coverage  # the same, then the coverage floor
-uv run --python 3.15 python -m tools.verify
-                                          # on another supported Python, 3.11 to 3.15
-uv run pytest tests/codec                 # some tests alone
-uv build                                  # the sdist and the wheel, in dist/
+uv sync --locked                            # the environment, with the tools uv.lock pins
+git config core.hooksPath .githooks         # run the checks before each commit (once per clone)
+uv run python -m tools.verify               # every check a change must pass
+uv run python -m tools.verify --coverage    # and the coverage floor, as CI holds it
+uv run --python 3.15 python -m tools.verify # the same, on another supported Python
+uv run pytest tests/codec                   # some tests alone
+uv build                                    # the sdist and the wheel, in dist/
 ```
 
-`verify` runs, in order and stopping at the first failure: `ruff format
---check`, `ruff check`, `mypy`, the rules of `tools/rules.py` (function
-and file lengths, each test's citation, each citation's target), and the
-tests. CI runs it on Linux, macOS and Windows with each supported Python,
-and coverage on Linux (D11). The floor is `fail_under` in
-`pyproject.toml`, and only rises (R-COV-2).
+`uv run python -m tools.verify` stops at the first failure (RULES.md D4). CI runs it
+on Linux, macOS and Windows, on each supported runtime, and coverage on
+Linux. The coverage floor only rises (D7, R-COV-2).
 
-uv installs the Python versions it needs itself (`uv python install
-3.11 3.15`). Project automation is Python in `tools/`, never shell
-scripts (D4, R-TOOL-1).
+Project automation is the language's own tooling, never shell scripts
+(R-PROC-5).
 
 ## Where things are
 
 | Path | What |
 |---|---|
-| `src/turborel/__init__.py` | the package: its docstring, PEP 249's globals and exceptions |
-| `src/turborel/_errors.py` | PEP 249's exceptions, each carrying SQLCODE and SQLSTATE (D7) |
-| `src/turborel/_codec/` | the protocol's codec, without I/O; `frames.py`, a frame's header |
-| `tests/` | the tests, a folder for each layer: `tests/codec/` for `_codec` |
-| `tools/` | the checks: `verify.py` runs them, `rules.py` holds the project's own, `headings.py` lists the headings tests cite |
-| `doc/` | the manual: `user/` (Volume I, User's Guide), `client/` (Volume II, API Reference), `appendix/`; laid out as turborel's, which turborel.com's docs site reads |
+| `pyproject.toml` | the package, its build (D10) and every check's configuration (D11) |
+| `uv.lock` | the development tools, locked (R-DEP-3) |
+| `.python-version` | the Python uv runs locally: 3.11, the oldest |
+| `src/turborel/__init__.py` | the package: its docstring, PEP 249's globals and exceptions (D2) |
+| `src/turborel/_errors.py` | PEP 249's exceptions, each carrying SQLCODE and SQLSTATE (D9) |
+| `src/turborel/_codec/` | the `codec` layer, without I/O: the frame header, the fields (D1) |
+| `src/turborel/py.typed` | says the package is typed (PEP 561) |
+| `tests/` | the tests, a folder for each layer, as `tests/codec/` for `_codec` |
+| `tools/` | the checks tool: `verify.py` runs every check, `rules.py` and `manual.py` hold the project's own rules, `headings.py` the headings tests cite (D4, D6) |
+| `doc/` | the manual (R-DOC-7) |
 
-Each layer of the plan becomes a private package of its own as its
-milestone begins, mapped to the turborel-client module it follows
-(D12). The public interface is `turborel` and, from M7, `turborel.aio`.
+Each layer of D1 becomes a private package of `turborel` as its
+milestone begins: `_codec`, `_transport`, `_auth`, `_tls`, `_session`,
+`_statements`, `_lobs`, `_copy`, `_settings`, `_pipeline` and `_pool`.
+The public interface is `turborel` and, from M7, `turborel.aio`.
 
-The protocol is turborel's `doc/client/05-protocol.md`, the client's
+The protocol is Turborel's `doc/client/05-protocol.md`, the client's
 features `doc/client/02-library.md` and `02-library-connections.md`, and
 the reference code `protocol/src/` and `client/src/`, all in
 [turborel](https://github.com/turborel/turborel). Where the page and the
-code differ, the code is right.
+code differ, the code is right; CONFORMANCE.md names each such place.
 
 ## Rules that are broken most often
 
-`verify` treats every warning as an error. RULES.md §3 and §4 have the
-full list.
+`uv run python -m tools.verify` treats every warning as an error (R-LINT-1). RULES.md
+§3 and §4 have the full list.
 
-- Every failure is one of the driver's exceptions with its SQLCODE and
-  SQLSTATE (R-ERR-1). No `ValueError`, `struct.error`, `IndexError` or
-  `OSError` may reach a program; catch it and raise the driver's, `from`
-  the original (R-ERR-3).
-- No `assert` in library code, and no `print` (R-ERR-1, R-STYLE-4).
+- Every failure is the driver's error, with its SQLCODE and SQLSTATE
+  (R-ERR-1, R-ERR-2). No error of the language or a library beneath it
+  reaches a program; catch it, and give the driver's, keeping the cause
+  (R-ERR-3).
+- No printing, and no ending the process, in library code (R-STYLE-3,
+  R-ERR-1).
 - Check every length or count a server sends against its bound before
-  reading or reserving for it (R-ERR-4).
+  reading or reserving for it (R-SAFE-1).
+- No secret in a log, a failure's message or an object's display form
+  (R-SAFE-4).
+- Integers of the protocol are read and written at their width,
+  little-endian; exact numbers never pass through a float (R-NUM).
 - Keep functions to 50 lines of code and 5 parameters, and files to 600
   lines (R-SIZE).
-- No magic numbers or strings: protocol tags, kinds and capability names
-  are `Final` constants in the codec (R-CONST).
-- Every public module, class, function and constant has a docstring, in
-  Google's style, with `Raises:` (R-DOC-1, D8).
-- Comments say why (R-DOC-2). No `TODO` comments or commented-out code
-  (R-DOC-3).
-- `mypy --strict` passes, with no `Any` in a public signature; a
-  `type: ignore` names its code (R-TYPE).
-- A `noqa` names its rule and says why (R-DEV-1).
+- No magic numbers or strings: protocol tags, kinds, capability, status
+  and mechanism names are named constants, defined once (R-CONST).
+- Every public item has a doc comment (R-DOC-1). Comments say why
+  (R-DOC-2). No `TODO` comments or commented-out code (R-DOC-5).
+- A silenced warning names its rule and says why (R-LINT-3).
 - No dependency without a decision in RULES.md (R-DEP-1).
-- Code for one platform is chosen by `sys.platform` and refused
-  elsewhere with the driver's error (R-PLAT-1).
-- Secrets never reach a log, a `repr` or an exception's message
-  (R-SAFE-2).
+- Code of one platform is chosen by the platform and refused elsewhere
+  with the driver's error (R-PLAT-2).
+- No `assert` deciding anything, and no `print`, in library code
+  (R-ERR-1, R-STYLE-3).
+- `mypy --strict` passes, with no `Any` in a public signature; a
+  `type: ignore` names its error code and says why (R-TYPE).
+- A `noqa` names its rule and says why (R-LINT-3).
+- Every public module, class, function and constant has a docstring, in
+  Google's style, with `Raises:` (R-DOC-1, D12).
 
 ## Tests
 
-Every test is a pytest function whose docstring begins `Verifies:` and a
-tag (R-TRACE-1, D13):
+Every test cites what it verifies, by its docstring, beginning `Verifies:`, beginning with a
+tag (R-TRACE-1, D6):
 
 - `[PROTOCOL <heading>]`, a section of 05-protocol.md, as
   `[PROTOCOL Frames]`;
 - `[CLIENT <heading>]`, a section of 02-library.md or
   02-library-connections.md, as `[CLIENT Pipelines]`;
 - `[DESIGN] D<n>`, a decision of RULES.md;
-- `[TOOL] R-…`, a rule `tools/` checks.
+- `[TOOL] R-<id>`, a rule the checks tool holds.
 
-The headings are listed in `tools/headings.py`, and `verify` refuses one
-that is not there. Tests are deterministic, with no clock, randomness or
-network beyond loopback (R-TEST-5). Shared fixtures go in a
-`conftest.py`. A fixed defect gets a regression test that fails without
-the fix (R-TEST-6).
+The checks tool refuses a heading, decision or rule that is not there
+(R-TRACE-2). Tests are deterministic, with no clock, randomness or
+network beyond loopback (R-TEST-5). A shared fixture is written once
+(R-TEST-7). A fixed defect gets a regression test that fails without the
+fix (R-TEST-6). A live test runs its own server on its own port and data
+directory, and stops it.
 
 ## Citing the spec
 
@@ -120,23 +129,27 @@ heading as printed. Never cite from memory. Code never cites TODO.md.
 A finished feature updates these in the same change:
 
 - RULES.md, if it made a decision, including the row in §1's table;
-- CONFORMANCE.md, each row it implements (R-TRACE-3);
+- CONFORMANCE.md, each row it implements (R-TRACE-4), marked done only
+  where its code exists and its tests pass;
 - TODO.md, which only holds open work;
-- [doc/](doc/README.md), for anything a program sees (R-DOC-6), every
-  example run: each chapter keeps its `# Title` and its
-  `[Contents](README.md)` line, and links only within `doc/` or by full
-  URL, as the docs site reads it;
+- [doc/](doc/README.md), for anything a program sees (R-DOC-7), every
+  example run: each page keeps its `# Title` and its
+  `[Contents](README.md)` line, links within `doc/` are relative `.md`
+  links, and a link out of `doc/` is a full URL, as the docs site reads
+  `doc/` alone;
 - README.md, if what the driver is or needs changes.
+
+No document gives timings or speedups; numbers go in a commit message.
 
 ## Commits
 
 - Commit only when the maintainer asks, and never push without approval.
 - Follow CONTRIBUTING.md's form, with one logical change per commit.
-- Add no AI or agent attribution to a commit or pull request. That means
-  no `Co-Authored-By` for an agent, no "Generated with" and no
-  `Signed-off-by`.
+- Add no AI or agent attribution to a commit, a pull request, a file or
+  the package's metadata. That means no `Co-Authored-By` for an agent,
+  no "Generated with" and no `Signed-off-by`.
 - Stage with an explicit path list, `git add -- <path> ...`. Never use
   `git add -A` or `git add .` on the whole tree.
-- Never stage `LICENSE` or scratch files.
-- Code for one platform can't be verified locally on another. Say so
-  when handing it back.
+- Never stage scratch files, or a live test's data directory.
+- Code compiled for one platform only can't be verified locally on
+  another. Say so when handing it back (R-PLAT-4).

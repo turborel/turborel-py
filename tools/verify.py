@@ -1,10 +1,11 @@
 """Every check a change must pass, in order, stopping at the first failure.
 
-`python -m tools.verify` runs the formatter's check, the linter, the type
-checker, the rules in `tools.rules`, and the tests. `--coverage` runs the
-tests under coverage and then holds the floor (RULES.md R-PROC-1,
-R-COV-2). Each tool runs as a module of the interpreter running this, so
-the same command serves Linux, macOS and Windows (RULES.md D4).
+`python -m tools.verify` runs the formatter's check, the linter, the
+type checker, the rules in `tools.rules` and `tools.manual`, and the
+tests. `--coverage` runs the tests under coverage and then holds the
+floor (RULES.md R-PROC-1, R-COV-2). Each tool runs as a module of the
+interpreter running this, so the same command serves Linux, macOS and
+Windows (RULES.md D4).
 """
 
 from __future__ import annotations
@@ -15,7 +16,8 @@ import sys
 from pathlib import Path
 from typing import Final
 
-from tools.rules import check
+from tools import manual
+from tools.rules import check, check_documents
 
 ROOT: Final = Path(__file__).resolve().parent.parent
 """The repository's root, where every check runs."""
@@ -42,8 +44,10 @@ def _run(name: str, module_args: tuple[str, ...]) -> bool:
 def _rules() -> bool:
     print("verify: rules", flush=True)
     paths = sorted(path for folder in SOURCES for path in (ROOT / folder).rglob("*.py"))
+    documents = sorted(ROOT.glob("*.md")) + sorted((ROOT / "doc").rglob("*.md"))
     rules = (ROOT / "RULES.md").read_text(encoding="utf-8")
-    findings = check(paths, rules)
+    findings = check(paths, rules) + check_documents(documents, rules)
+    findings += manual.check(ROOT)
     for finding in findings:
         print(finding)
     return not findings

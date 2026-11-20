@@ -2,7 +2,7 @@
 
 [Contents](README.md)
 
-This chapter will tell how a program under load sends requests without
-waiting for each reply, skipping the rest of a batch on a failure if it
-asks, and how a pool shares a bounded set of connections among threads
-and tasks. It is filled at milestone M6.
+This chapter will tell how a program sends a batch of requests in one
+round trip by a pipeline, stopping at its first failure if asked; shares
+a bounded set of connections by a pool; and holds several named
+connections by the SQL-agent. It is filled at milestone M6.

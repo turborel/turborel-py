@@ -24,7 +24,7 @@ def test_the_settled_module_globals() -> None:
 
 
 def test_the_version_is_the_package_metadata() -> None:
-    """Verifies: [DESIGN] D9 one version, 0.0.0, in pyproject.toml and the module."""
+    """Verifies: [DESIGN] D5 one version, 0.0.0, in pyproject.toml and the module."""
     with PYPROJECT.open("rb") as file:
         project = tomllib.load(file)["project"]
     assert turborel.__version__ == project["version"] == "0.0.0"
@@ -52,7 +52,7 @@ def test_exceptions_follow_pep_249(
 ) -> None:
     """Verifies: [DESIGN] D2 PEP 249's exceptions, each under its base.
 
-    [DESIGN] D7 each carries its SQLCODE, SQLSTATE and message.
+    [DESIGN] D9 each carries its SQLCODE, SQLSTATE and message.
     """
     assert issubclass(exception, base)
     raised = exception("refused", sqlcode=-1, sqlstate="HY000")
@@ -86,7 +86,7 @@ def test_the_driver_raises_turborels_conditions(
     sqlcode: int,
     sqlstate: str,
 ) -> None:
-    """Verifies: [DESIGN] D14 what the driver refuses itself, by its condition."""
+    """Verifies: [DESIGN] D13 what the driver refuses itself, by its condition."""
     raised = make()
     assert isinstance(raised, exception)
     assert (raised.sqlcode, raised.sqlstate, raised.message) == (sqlcode, sqlstate, "x")

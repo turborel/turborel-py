@@ -1,6 +1,6 @@
 # Volume I: User's Guide
 
-For anyone who writes a Python program against Turborel: connecting, running statements and the rest, chapter by chapter, read in order.
+For anyone who writes a Python program against Turborel: installing the driver, connecting, running statements and moving data, chapter by chapter, read in order.
 
 [The documentation set](../README.md)
 

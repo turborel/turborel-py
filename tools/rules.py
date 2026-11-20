@@ -42,6 +42,10 @@ _RULE_ROW: Final = re.compile(r"^\| (R-[A-Z]+-\d+) \|", re.MULTILINE)
 
 _Function = ast.FunctionDef | ast.AsyncFunctionDef
 
+# A citation's form written out in a document, as `[PROTOCOL <heading>]`,
+# names no heading.
+_PLACEHOLDER: Final = "<"
+
 
 def file_length(path: Path, text: str) -> list[str]:
     """R-SIZE-2: the finding if `text`, the file at `path`, is too long."""
@@ -135,7 +139,7 @@ def citations(path: Path, text: str, rules: str) -> list[str]:
     findings = [
         f"{path}: [{document} {heading}] is no heading of {document} (R-TRACE-2)"
         for document, heading in _DOCUMENT_CITATION.findall(text)
-        if heading not in DOCUMENTS[document]
+        if heading not in DOCUMENTS[document] and not heading.startswith(_PLACEHOLDER)
     ]
     findings += [
         f"{path}: {decision} is no decision of RULES.md (R-TRACE-2)"
@@ -167,4 +171,21 @@ def check(paths: list[Path], rules: str) -> list[str]:
         findings += function_length(path, text)
         findings += verifies_tags(path, text)
         findings += citations(path, text, rules)
+    return findings
+
+
+def check_documents(paths: list[Path], rules: str) -> list[str]:
+    """R-TRACE-2's findings over the documents `paths`, such as CONFORMANCE.md.
+
+    Args:
+        paths: The Markdown files to check.
+        rules: The text of RULES.md.
+
+    Returns:
+        A finding for each citation of a heading, decision or rule that
+        does not exist.
+    """
+    findings: list[str] = []
+    for path in paths:
+        findings += citations(path, path.read_text(encoding="utf-8"), rules)
     return findings

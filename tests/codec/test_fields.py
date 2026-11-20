@@ -136,7 +136,7 @@ def nest(r: Reader, levels: int) -> int:
 
 
 def test_parts_nest_to_a_bound() -> None:
-    """Verifies: [DESIGN] D14 values and types nest at most 16 deep."""
+    """Verifies: [DESIGN] D13 values and types nest at most 16 deep."""
     assert nest(reader(b""), MAX_NESTING) == 0
     with pytest.raises(OperationalError) as failure:
         nest(reader(b""), MAX_NESTING + 1)
