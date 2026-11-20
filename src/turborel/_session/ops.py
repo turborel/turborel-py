@@ -19,9 +19,11 @@ from turborel._codec.failures import Notice
 from turborel._codec.replies import (
     Challenge,
     Complete,
+    Description,
     Error,
     Pong,
     Ready,
+    Rows,
     Status,
     decode,
 )
@@ -78,6 +80,8 @@ def receive(session: Session) -> Steps[Reply]:
             reply = decode(kind, body)
         except OperationalError as e:
             raise session.lose(e) from e
+        if session.tap is not None and isinstance(reply, Description | Rows):
+            session.tap(kind, body)
         if isinstance(reply, Notice):
             session.told.notice(reply)
         elif isinstance(reply, Status):

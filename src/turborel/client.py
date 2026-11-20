@@ -24,6 +24,7 @@ from turborel._auth.mechanisms import (
     TlsChannel,
     Trust,
 )
+from turborel._client.bulk import Copying
 from turborel._client.cancel import Canceller
 from turborel._client.connect import (
     Address,
@@ -34,8 +35,22 @@ from turborel._client.connect import (
     in_the_clear,
 )
 from turborel._client.connection import Connection
+from turborel._client.lobs import Lob, LobReader, LobWriter
 from turborel._codec.failures import Diagnostics, Failure, Notice
 from turborel._codec.replies import Complete, Timing
+from turborel._copy.copying import CHUNK_BYTES
+from turborel._copy.delimited import DEFAULT_MAX_RECORD, Delimited, Dialect
+from turborel._copy.exporting import ExportFormat, read_native
+from turborel._copy.importing import (
+    DEFAULT_BATCH,
+    Import,
+    Imported,
+    ImportFailure,
+    Rejected,
+    import_rows,
+)
+from turborel._copy.sources import Heading, Position, Record, Source, SourceError
+from turborel._lobs.locators import CHUNK_OCTETS, LOB_INLINE_OCTETS
 from turborel._session.capabilities import Offer
 from turborel._session.state import KEPT_NOTICES
 from turborel._statements.prepared import Batch, Statement
@@ -59,11 +74,16 @@ from turborel._transport.timeouts import (
 
 __all__ = [
     "CANCEL_WITHIN",
+    "CHUNK_BYTES",
+    "CHUNK_OCTETS",
     "CONNECT_WITHIN",
+    "DEFAULT_BATCH",
+    "DEFAULT_MAX_RECORD",
     "DEFAULT_PIPE",
     "DEFAULT_PORT",
     "KEPT_NOTICES",
     "KEY_CACHE_ENTRIES",
+    "LOB_INLINE_OCTETS",
     "TERMINATE_WITHIN",
     "Address",
     "Batch",
@@ -72,19 +92,35 @@ __all__ = [
     "ChannelBinding",
     "Complete",
     "Connection",
+    "Copying",
+    "Delimited",
     "Diagnostics",
+    "Dialect",
+    "ExportFormat",
     "Failure",
+    "Heading",
+    "Import",
+    "ImportFailure",
+    "Imported",
     "KeyCache",
+    "Lob",
+    "LobReader",
+    "LobWriter",
     "Local",
     "Mechanism",
     "Notice",
     "Offer",
     "Outcome",
     "Password",
+    "Position",
     "Ran",
+    "Record",
+    "Rejected",
     "Rowset",
     "Scram",
     "Sink",
+    "Source",
+    "SourceError",
     "Statement",
     "Target",
     "Tcp",
@@ -97,8 +133,10 @@ __all__ = [
     "connect_local",
     "connect_tls",
     "connect_to",
+    "import_rows",
     "in_the_clear",
     "presenting",
+    "read_native",
     "roots",
     "tls_channel",
     "trusting",

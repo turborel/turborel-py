@@ -397,6 +397,27 @@ class CopyData:
         return _framed(COPY_DATA, w)
 
 
+def encoded_row(values: Sequence[object]) -> bytes:
+    """A row as a CopyData carries it, to be sent with others.
+
+    Raises:
+        ProgrammingError: SQLSTATE 07006, of a value of no type the
+            protocol carries; and as `write_row` raises.
+    """
+    w = Writer()
+    write_row(w, values)
+    return w.data()
+
+
+def copy_data(rows: Sequence[bytes]) -> bytes:
+    """A CopyData's frame of rows each `encoded_row` gave."""
+    w = Writer()
+    w.u32(len(rows))
+    for row in rows:
+        w.raw(row)
+    return _framed(COPY_DATA, w)
+
+
 @dataclass(frozen=True, slots=True)
 class CopyEnd:
     """The copy ended, or abandoned [PROTOCOL CopyEnd 'N']."""

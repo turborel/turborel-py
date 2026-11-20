@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import IO, TYPE_CHECKING
 
-from turborel._client.statements import Statements
+from turborel._client.bulk import Bulk
 from turborel._session.capabilities import Offer
 from turborel._transport.stream import Stream
 
@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from turborel._auth.mechanisms import Mechanism
 
 
-class Connection(Statements):
+class Connection(Bulk):
     """A session of a turborel server, over one stream."""
 
     @classmethod

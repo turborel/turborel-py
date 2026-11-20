@@ -87,6 +87,11 @@ class Session:
     autocommit: bool = False
     next_statement: int = 0
     told: Told = field(default_factory=Told)
+    copying: bool = False
+    """Whether a copy is under way, so only its own requests and Ping go."""
+    tap: Callable[[int, bytes], None] | None = None
+    """What is given each Description and Rows as read, its kind and body:
+    an export of the protocol's own frames."""
 
     def ready(self, authorization: str, key: bytes, server: str) -> None:
         """Ready read: who the session is, its key and the server's product."""
