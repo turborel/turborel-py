@@ -428,8 +428,8 @@ def test_change_user_renews_the_session(live: Live) -> None:
     """Verifies: [PROTOCOL ChangeUser 'U'] the user proved again, the session renewed.
 
     The same Challenge and Answer steps as Hello's; accepted, as by Reset
-    under a new cancel key, the transaction rolled back told by 01T01
-    [CLIENT Controlling the session].
+    under a new cancel key, the transaction rolled back told by 01T01,
+    none active after [CLIENT Controlling the session].
     """
     conn = connect_local(live.socket, "ANN", Trust())
     before = conn.canceller()
@@ -437,7 +437,7 @@ def test_change_user_renews_the_session(live: Live) -> None:
     conn.query("CREATE TABLE CHANGED (N INTEGER)")
     conn.change_user("ANN", Scram(live.password))
     assert [n.sqlstate for n in conn.take_notices()] == ["01T01"]
-    assert conn.authorization == "ANN"
+    assert (conn.in_transaction, conn.authorization) == (False, "ANN")
     after = conn.canceller()
     assert after is not None
     assert after._key != before._key  # noqa: SLF001  # The key, never shown.

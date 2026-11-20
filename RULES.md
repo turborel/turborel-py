@@ -437,6 +437,13 @@ rule here, the rule is kept:
   a `noqa` saying so.
 - ruff's copyright rule, `CPY001`, is off: LICENSE covers every file,
   as in Turborel, and no file repeats it.
+- The driver behaves as turborel-client's code does, where the
+  protocol's page leaves a choice or says less, but follows the page
+  where turborel-client departs from it. Such places:
+  - ChangeUser renews the session as Reset does [PROTOCOL ChangeUser
+    'U'], leaving no transaction active; turborel-client keeps the flag
+    of the statement before, and the driver clears it, so
+    `in_transaction` is false after `change_user`.
 
 ### This driver's own
 
@@ -451,9 +458,9 @@ active, and its diagnostics.
 
 The class is chosen by the condition. A connection failure, SQLCODE -919
 and SQLSTATE 08006, as turborel-client gives a frame that cannot be read,
-is an `OperationalError`. The classes of the other SQLSTATE classes are
-fixed as the statements that raise them are built (milestone M3), so a
-program may also decide by `sqlstate`.
+is an `OperationalError`. Each other SQLSTATE class takes the class
+`_session/raising.py` gives it, as Appendix B of the manual lists, and
+a program may also decide by `sqlstate`.
 
 #### D10. The build backend is uv_build
 

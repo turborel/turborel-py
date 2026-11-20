@@ -157,6 +157,8 @@ def change_user(session: Session, user: str, mechanism: Mechanism) -> Steps[None
         elif isinstance(reply, Ready):
             mechanism.ready()
             session.ready(reply.authorization, reply.key, reply.server)
+            # Renewed as by Reset, so no transaction is active (RULES.md D8).
+            session.active = False
             return
         elif isinstance(reply, Error):
             raise session.failed(reply.failure)

@@ -266,3 +266,20 @@ def test_requests_wait_for_ready() -> None:
         conn.ping()
         kinds = [peer.received()[0] for _ in range(3)]
         assert kinds == [ord("H"), ord("A"), ord("G")]
+
+
+def test_change_user_leaves_no_transaction_active() -> None:
+    """Verifies: [PROTOCOL ChangeUser 'U'] accepted, the session renewed as by Reset.
+
+    So no transaction is active after it, though the statement before
+    left one (RULES.md D8).
+    """
+    with Peer() as peer:
+        peer.reply(ready(capabilities=("change-user",)))
+        conn = Connection.open(peer.client, "ANN", Trust())
+        peer.reply(complete(active=True))
+        conn.query("CREATE TABLE T (N INTEGER)")
+        assert conn.in_transaction
+        peer.reply(notice("01T01", "rolled back"), ready(capabilities=("change-user",)))
+        conn.change_user("ANN", Trust())
+        assert not conn.in_transaction
