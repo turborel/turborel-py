@@ -81,9 +81,15 @@ def tcp_to(host: str, port: int, within: float | None) -> socket.socket:
 def _local(path: str, within: float | None) -> Stream:
     if sys.platform == "win32":
         try:
-            return Stream(open_pipe(path, within))
+            local = Stream(open_pipe(path, within))
         except OSError as e:
             raise io_failed("connect", e) from e
+    else:
+        local = _unix(path, within)
+    return local
+
+
+def _unix(path: str, within: float | None) -> Stream:
     if not hasattr(socket, "AF_UNIX"):
         msg = f"{path} names a local socket, and this platform has none"
         raise connection_failure(msg)

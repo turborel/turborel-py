@@ -13,7 +13,7 @@ from turborel._transport.pipe import BUSY_RETRY, ERROR_PIPE_BUSY, open_pipe, ret
 def busy() -> OSError:
     """Windows' error of a pipe whose every instance is busy."""
     error = OSError("busy")
-    error.winerror = ERROR_PIPE_BUSY  # type: ignore[attr-defined]  # Windows' field.
+    setattr(error, "winerror", ERROR_PIPE_BUSY)  # noqa: B010  # Windows' field, on any platform.
     return error
 
 

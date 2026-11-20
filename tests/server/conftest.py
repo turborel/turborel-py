@@ -9,10 +9,11 @@ The set-up makes its own certificates with `openssl` (TURBOREL_TEST_OPENSSL,
 else the one on the path): an authority, the server's certificate for
 localhost and 127.0.0.1, a client's for ANN, and another authority no one
 trusts; so no secret is ever committed. It starts one server for the
-session, held in memory, on loopback port 17431 (TURBOREL_TEST_PORT) and
+session, its database in a directory of the set-up's own, made with its
+owner ANN by `turboreld user add`, on loopback port 17431 (TURBOREL_TEST_PORT) and
 on a Unix socket, with TLS on, the client authority trusted, local
 clients trusted, SCRAM taken without TLS too, no delay after a failed
-login and few PBKDF2 iterations, its owner ANN with a schema of ANN's;
+login and few PBKDF2 iterations, and a schema of ANN's;
 and stops it at the end.
 """
 
@@ -23,11 +24,10 @@ import shlex
 import shutil
 import socket
 import subprocess
-import sys
 import tempfile
 import time
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import IO, TYPE_CHECKING
 
 import pytest
 from live import OWNER, PASSWORD, Live
@@ -112,7 +112,7 @@ def _settings(root: Path, port: int) -> list[str]:
         "SERVER.LOGIN_DELAY_MS": "0",
         "SERVER.PASSWORD_ITERATIONS": "10000",
     }
-    words = ["--memory", "--owner", OWNER]
+    words = ["--dir", str(root / "data")]
     for name, value in settings.items():
         words += ["--set", f"{name}={value}"]
     return words
@@ -134,28 +134,41 @@ def _wait(process: subprocess.Popen[bytes], port: int) -> None:
     )
 
 
+def _make_database(command: str, root: Path, log: IO[bytes]) -> None:
+    """The database, made with its owner by `turboreld user add`."""
+    subprocess.run(  # noqa: S603  # The command the test was given.
+        [
+            *shlex.split(command),
+            *("--dir", str(root / "data"), "--set", "SERVER.PASSWORD_ITERATIONS=10000"),
+            *("user", "add", OWNER, "--owner"),
+        ],
+        input=f"{PASSWORD}\n".encode(),
+        stdout=log,
+        stderr=subprocess.STDOUT,
+        check=True,
+    )
+
+
 @pytest.fixture(scope="session")
 def live() -> Iterator[Live]:
     """The live server, started for the session and stopped after it."""
     command = os.environ.get(SERVER)
     if not command:
         pytest.skip(f"the live tests run where {SERVER} names turboreld's command")
-    if sys.platform == "win32":
+    if os.name == "nt":
         pytest.skip("the live set-up starts turboreld on Linux and macOS")
     # A short path: a Unix socket's path is at most about 100 bytes.
     root = Path(tempfile.mkdtemp(prefix="trl", dir="/tmp"))
     _certificates(root)
     port = int(os.environ.get(PORT, DEFAULT_PORT))
     log = (root / "server.log").open("wb")
+    _make_database(command, root, log)
     process = subprocess.Popen(  # noqa: S603  # The command the test was given.
         [*shlex.split(command), *_settings(root, port)],
-        stdin=subprocess.PIPE,
+        stdin=subprocess.DEVNULL,
         stdout=log,
         stderr=subprocess.STDOUT,
     )
-    assert process.stdin is not None
-    process.stdin.write(f"{PASSWORD}\n".encode())
-    process.stdin.close()
     try:
         _wait(process, port)
         owner = connect(("127.0.0.1", port), OWNER, Trust())

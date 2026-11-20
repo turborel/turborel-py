@@ -64,10 +64,7 @@ def open_pipe(path: str, within: float | None) -> IO[bytes]:
         OperationalError: SQLSTATE 08006, on a platform with no named pipes.
         OSError: As opening fails.
     """
-    if sys.platform == "win32":
-        return retried(lambda: _create(path), within)
-    msg = f"{path} names a named pipe, and only Windows has them"
-    raise connection_failure(msg)
+    return retried(lambda: _create(path), within)
 
 
 if sys.platform == "win32":
@@ -105,3 +102,10 @@ if sys.platform == "win32":
             raise OSError(None, ctypes.FormatError(code), path, code)
         descriptor = msvcrt.open_osfhandle(handle, os.O_RDWR | os.O_BINARY)
         return os.fdopen(descriptor, "r+b", buffering=0)
+
+else:
+
+    def _create(path: str) -> IO[bytes]:
+        """Refused: a platform other than Windows has no named pipes."""
+        msg = f"{path} names a named pipe, and only Windows has them"
+        raise connection_failure(msg)
