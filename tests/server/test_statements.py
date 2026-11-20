@@ -520,3 +520,30 @@ def test_cursors_closed_and_statements_deallocated(conn: Connection) -> None:
     conn.deallocate(statement)
     ran = conn.query_many("")
     assert (len(ran.outcomes), ran.failure) == (1, None)
+
+
+def test_a_call_s_output_parameters(conn: Connection) -> None:
+    """Verifies: [PROTOCOL Prepared 'P'] a CALL: its inputs, then its outputs.
+
+    One column for each `?` of an OUT or INOUT parameter, in the
+    procedure's order, named as each, an INOUT `?` both; [PROTOCOL
+    Execute 'E'] one Rows reply of one row of their values, before the
+    Complete, the CALL's outcome.
+    """
+    conn.query("CREATE TABLE KS (K INTEGER)")
+    conn.query("INSERT INTO KS VALUES (1), (2)")
+    conn.query(
+        "CREATE PROCEDURE FIND (IN WANTED INTEGER, OUT GOT INTEGER)"
+        " READS SQL DATA SELECT K * 10 INTO GOT FROM KS WHERE K = WANTED"
+    )
+    conn.query(
+        "CREATE PROCEDURE BUMP (INOUT N INTEGER, OUT SEEN VARCHAR(5))"
+        " READS SQL DATA SELECT N + MAX(K), 'X' INTO N, SEEN FROM KS"
+    )
+    find = conn.prepare("CALL FIND(?, ?)")
+    assert (len(find.parameters), [c.name for c in find.columns]) == (1, ["GOT"])
+    assert rows_of(conn.execute(find, (2,))) == [(20,)]
+    bump = conn.prepare("CALL BUMP(?, ?)")
+    assert (len(bump.parameters), [c.name for c in bump.columns]) == (1, ["N", "SEEN"])
+    assert rows_of(conn.execute(bump, (5,))) == [(7, "X")]
+    conn.query("ROLLBACK")

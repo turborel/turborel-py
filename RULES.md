@@ -440,11 +440,10 @@ rule here, the rule is kept:
   as in Turborel, and no file repeats it.
 - The driver behaves as turborel-client's code does, where the
   protocol's page leaves a choice or says less, but follows the page
-  where turborel-client departs from it. Such places:
-  - ChangeUser renews the session as Reset does [PROTOCOL ChangeUser
-    'U'], leaving no transaction active; turborel-client keeps the flag
-    of the statement before, and the driver clears it, so
-    `in_transaction` is false after `change_user`.
+  where turborel-client departs from it, and says so here. None is
+  left: the two there were, a change of user leaving no transaction
+  active and an import's long CLOB field sent by a locator, turborel-client
+  does as the page says from b40bd830.
 - Python's `ssl` exports no keying material, so SCRAM-SHA-256-PLUS
   binds by `tls-server-end-point`, the certificate the server presented,
   over TLS 1.2 and 1.3 alike, where turborel-client binds by

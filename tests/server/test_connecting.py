@@ -429,3 +429,40 @@ def test_reset_and_change_user_tell_the_settings_again(live: Live) -> None:
     assert conn.authorization == "ANN"
     assert conn.setting("AUTHORIZATION") == "ANN"
     conn.terminate()
+
+
+STATUS_NAMES = (
+    "SERVER_VERSION",
+    "AUTHORIZATION",
+    "SCHEMA",
+    "READ_ONLY",
+    "SERVER_READ_ONLY",
+    "CATALOG",
+    "OWNER",
+)
+
+
+def test_the_statuses_in_their_order(live: Live) -> None:
+    """Verifies: [PROTOCOL Status 'T'] at login, one of each name in the page's order.
+
+    Then the session's own settings; after a statement only what it
+    changed, none of one that changed nothing; CATALOG, the database's
+    catalog's name.
+    """
+    conn = connect_local(live.socket, "ANN", Trust())
+    names = list(conn.settings())
+    assert tuple(names[: len(STATUS_NAMES)]) == STATUS_NAMES
+    assert {"SESSION.TIME_ZONE", "TRANSACTION.ISOLATION"} <= set(
+        names[len(STATUS_NAMES) :]
+    )
+    assert conn.setting("CATALOG") == "TURBOREL"
+    assert (conn.setting("OWNER"), conn.setting("SERVER_READ_ONLY")) == ("YES", "NO")
+    before = dict(conn.settings())
+    conn.query("VALUES 1")
+    assert dict(conn.settings()) == before
+    conn.query("SET TIME ZONE INTERVAL '+04:00' HOUR TO MINUTE")
+    changed = {k: v for k, v in conn.settings().items() if before.get(k) != v}
+    assert changed == {"SESSION.TIME_ZONE": "+04:00"}
+    conn.reset()
+    assert conn.setting("SESSION.TIME_ZONE") == "+00:00"
+    conn.terminate()

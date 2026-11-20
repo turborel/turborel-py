@@ -272,7 +272,7 @@ def test_change_user_leaves_no_transaction_active() -> None:
     """Verifies: [PROTOCOL ChangeUser 'U'] accepted, the session renewed as by Reset.
 
     So no transaction is active after it, though the statement before
-    left one (RULES.md D8).
+    left one.
     """
     with Peer() as peer:
         peer.reply(ready(capabilities=("change-user",)))
@@ -283,3 +283,14 @@ def test_change_user_leaves_no_transaction_active() -> None:
         peer.reply(notice("01T01", "rolled back"), ready(capabilities=("change-user",)))
         conn.change_user("ANN", Trust())
         assert not conn.in_transaction
+
+
+def test_a_status_of_a_null_is_empty() -> None:
+    """Verifies: [PROTOCOL Status 'T'] a value as SQL writes it, empty for a null.
+
+    CATALOG empty where it is null, kept as the server told it.
+    """
+    with Peer() as peer:
+        peer.reply(status("CATALOG", ""), ready())
+        conn = Connection.open(peer.client, "ANN", Trust())
+        assert conn.setting("CATALOG") == ""

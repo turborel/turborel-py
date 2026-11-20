@@ -240,3 +240,56 @@ def test_a_document_past_256_mib_is_refused(monkeypatch: pytest.MonkeyPatch) -> 
     assert len(encode("x" * 10)) == 16
     with pytest.raises(NotSupportedError):
         encode("x" * 11)
+
+
+# The page's example of {"a":[1,"x"]}, its 51 octets as it lays them out.
+PAGE_EXAMPLE = bytes.fromhex(
+    "01"  # version 1
+    "0b"
+    "01000000"
+    "25000000"
+    "00000000"
+    "0100000061"  # object, count, size, offset, key
+    "0a"
+    "02000000"
+    "0f000000"
+    "00000000"
+    "09000000"  # array, count, size, offsets
+    "03"
+    "0100000000000000"  # integer 1
+    "08"
+    "0100000078"  # string "x"
+)
+
+
+def test_the_page_s_examples_byte_for_byte() -> None:
+    """Verifies: [PROTOCOL JSON values] the 51 octets of {"a":[1,"x"]}, both ways.
+
+    [PROTOCOL Values] JSON nodes; `{"b":1,"a":2}` keeps its members in
+    that order, its directory putting `a` first, at 14, then `b` at 0.
+    """
+    assert len(PAGE_EXAMPLE) == 51
+    assert read(PAGE_EXAMPLE) == {"a": [1, "x"]}
+    assert encode({"a": [1, "x"]}) == PAGE_EXAMPLE
+    ordered = encode({"b": 1, "a": 2})
+    assert ordered == OBJECT
+    assert ordered[10:18] == u32(14) + u32(0)
+    assert list(read(ordered)) == ["b", "a"]  # type: ignore[arg-type]  # An object.
+
+
+def test_an_exact_number_keeps_its_written_scale() -> None:
+    """Verifies: [PROTOCOL JSON values] the narrowest node, the scale as written.
+
+    [PROTOCOL Values] 1.50 is a decimal node of units 150 and scale 2,
+    and reads back as 1.50; an integer of scale 0 an integer node; units
+    past an `i64`, or a scale past a `u8`, a wide decimal; the limits of
+    nesting, 128, and of a document, 256 MiB, are D13's above.
+    """
+    assert encode(Decimal("1.50")) == bytes([1, 4]) + i64(150) + bytes([2])
+    assert str(read(encode(Decimal("1.50")))) == "1.50"
+    assert encode(7) == bytes([1, 3]) + i64(7)
+    assert encode(Decimal(7)) == bytes([1, 3]) + i64(7)
+    wide = Decimal(2**70) / 10
+    assert encode(wide)[1] == 5
+    assert encode(Decimal("1E-300"))[1] == 5
+    assert read(encode(wide)) == wide
