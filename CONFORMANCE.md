@@ -142,36 +142,36 @@ From `doc/client/05-protocol.md`, The Native Protocol.
 | P-TYPE-26 | 26 XML: primary modifier `u8` (DOCUMENT, CONTENT, SEQUENCE), secondary `u8` (UNTYPED, ANY, XMLSCHEMA); of XMLSCHEMA, the schema's schema and name, its namespace and its element | `[PROTOCOL Data types]` | done |
 | P-TYPE-27 | 27 UUID: nothing (gap G1) | `[PROTOCOL Data types]` | done |
 | P-TYPE-100 | A distinct type written as its source type | `[PROTOCOL Data types]` | not yet |
-| P-TYPE-101 | A plug-in's type the client does not have read by its name, its values shown by their text | `[PROTOCOL Data types]` | not yet |
+| P-TYPE-101 | A plug-in's type the client does not have read by its name, its values shown by their text | `[PROTOCOL Data types]` | done |
 
 ### Values
 
 | ID | Row | Citation | Status |
 |---|---|---|---|
-| P-VAL-0 | 0 null: nothing | `[PROTOCOL Values]` | not yet |
-| P-VAL-1 | 1 character string: string, of a CHARACTER or a CHARACTER VARYING column alike | `[PROTOCOL Values]` | not yet |
-| P-VAL-2 | 2 exact number: units `i128`, then scale `u32`, units divided by ten to the scale; at the limits of `i128` and of scale | `[PROTOCOL Values]` | not yet |
-| P-VAL-3 | 3 approximate number: an IEEE 754 double's bits, `u64`; NaN and -0.0 kept | `[PROTOCOL Values]` | not yet |
-| P-VAL-4 | 4 a plug-in's value: its type's name, its text, its bytes | `[PROTOCOL Values]` | not yet |
-| P-VAL-6 | 6 binary string: bytes | `[PROTOCOL Values]` | not yet |
-| P-VAL-8 | 8 date, written as a timestamp | `[PROTOCOL Values]` | not yet |
-| P-VAL-9 | 9 time, written as a timestamp | `[PROTOCOL Values]` | not yet |
-| P-VAL-11 | 11 timestamp: zoned `u8`; precision `u8`; the displacement in minutes, an `i16` in the low half of a `u32`, -12:59 to +14:00; the instant, microseconds in UTC, `i64 as u64` | `[PROTOCOL Values]` | not yet |
-| P-VAL-13 | 13 interval: its qualifier as the INTERVAL type writes it, then units `i128`, months or microseconds; every qualifier | `[PROTOCOL Values]` | not yet |
-| P-VAL-14 | 14 truth value: `u8`, 0 false, 1 true; unknown as null | `[PROTOCOL Values]` | not yet |
-| P-VAL-15 | 15 decimal floating point: coefficient `i128`, then exponent `i32 as u32` | `[PROTOCOL Values]` | not yet |
-| P-VAL-16 | 16 array: a list of values, nested | `[PROTOCOL Values]` | not yet |
-| P-VAL-17 | 17 row: a list of values, one for each field | `[PROTOCOL Values]` | not yet |
-| P-VAL-20 | 20 large object, whole: kind `u8` (0 character, 1 binary), then its octets | `[PROTOCOL Values]` | not yet |
-| P-VAL-21 | 21 large object, by locator: kind `u8`, locator `u32`, its octets `u64`, its characters `u64` | `[PROTOCOL Values]` | not yet |
-| P-VAL-22 | 22 multiset: a list of values, in no set order | `[PROTOCOL Values]` | not yet |
-| P-VAL-23 | 23 structured value: its most specific type's schema and name, then its attributes | `[PROTOCOL Values]` | not yet |
-| P-VAL-24 | 24 reference: bytes | `[PROTOCOL Values]` | not yet |
-| P-VAL-25 | 25 JSON: bytes, the binary tree of Turborel's RULES.md D89 (gap G3), read to the language's JSON value or text and written from one; its nodes are the P-JSON rows | `[PROTOCOL Values]` | not yet |
-| P-VAL-26 | 26 XML: its serialization as CONTENT, string | `[PROTOCOL Values]` | not yet |
-| P-VAL-27 | 27 UUID: bytes, a count of 16, then the 16 octets (gap G1) | `[PROTOCOL Values]` | not yet |
-| P-VAL-100 | A value's tag says how it is written, not its column's type: CHARACTER VARYING written with tag 1 | `[PROTOCOL Values]` | not yet |
-| P-VAL-101 | A datetime's zoned byte 1 for a type WITH TIME ZONE; without a zone, the displacement the value is shown in | `[PROTOCOL Values]` | not yet |
+| P-VAL-0 | 0 null: nothing | `[PROTOCOL Values]` | done |
+| P-VAL-1 | 1 character string: string, of a CHARACTER or a CHARACTER VARYING column alike | `[PROTOCOL Values]` | done |
+| P-VAL-2 | 2 exact number: units `i128`, then scale `u32`, units divided by ten to the scale; at the limits of `i128` and of scale | `[PROTOCOL Values]` | done |
+| P-VAL-3 | 3 approximate number: an IEEE 754 double's bits, `u64`; NaN and -0.0 kept | `[PROTOCOL Values]` | done |
+| P-VAL-4 | 4 a plug-in's value: its type's name, its text, its bytes | `[PROTOCOL Values]` | done |
+| P-VAL-6 | 6 binary string: bytes | `[PROTOCOL Values]` | done |
+| P-VAL-8 | 8 date, written as a timestamp | `[PROTOCOL Values]` | done |
+| P-VAL-9 | 9 time, written as a timestamp | `[PROTOCOL Values]` | done |
+| P-VAL-11 | 11 timestamp: zoned `u8`; precision `u8`; the displacement in minutes, an `i16` in the low half of a `u32`, -12:59 to +14:00; the instant, microseconds in UTC, `i64 as u64` | `[PROTOCOL Values]` | done |
+| P-VAL-13 | 13 interval: its qualifier as the INTERVAL type writes it, then units `i128`, months or microseconds; every qualifier | `[PROTOCOL Values]` | done |
+| P-VAL-14 | 14 truth value: `u8`, 0 false, 1 true; unknown as null | `[PROTOCOL Values]` | done |
+| P-VAL-15 | 15 decimal floating point: coefficient `i128`, then exponent `i32 as u32` | `[PROTOCOL Values]` | done |
+| P-VAL-16 | 16 array: a list of values, nested | `[PROTOCOL Values]` | done |
+| P-VAL-17 | 17 row: a list of values, one for each field | `[PROTOCOL Values]` | done |
+| P-VAL-20 | 20 large object, whole: kind `u8` (0 character, 1 binary), then its octets | `[PROTOCOL Values]` | done |
+| P-VAL-21 | 21 large object, by locator: kind `u8`, locator `u32`, its octets `u64`, its characters `u64` | `[PROTOCOL Values]` | done |
+| P-VAL-22 | 22 multiset: a list of values, in no set order | `[PROTOCOL Values]` | done |
+| P-VAL-23 | 23 structured value: its most specific type's schema and name, then its attributes | `[PROTOCOL Values]` | done |
+| P-VAL-24 | 24 reference: bytes | `[PROTOCOL Values]` | done |
+| P-VAL-25 | 25 JSON: bytes, the binary tree of Turborel's RULES.md D89 (gap G3), read to the language's JSON value or text and written from one; its nodes are the P-JSON rows | `[PROTOCOL Values]` | done |
+| P-VAL-26 | 26 XML: its serialization as CONTENT, string | `[PROTOCOL Values]` | done |
+| P-VAL-27 | 27 UUID: bytes, a count of 16, then the 16 octets (gap G1) | `[PROTOCOL Values]` | done |
+| P-VAL-100 | A value's tag says how it is written, not its column's type: CHARACTER VARYING written with tag 1 | `[PROTOCOL Values]` | done |
+| P-VAL-101 | A datetime's zoned byte 1 for a type WITH TIME ZONE; without a zone, the displacement the value is shown in | `[PROTOCOL Values]` | done |
 | P-VAL-102 | A large object of at most SERVER.LOB_INLINE_BYTES, 64 KiB by default, read whole; a longer one by its locator, valid until its transaction ends | `[PROTOCOL Values]` | not yet |
 | P-VAL-103 | A large object sent whole, or as a locator the client made with Lob requests | `[PROTOCOL Values]` | not yet |
 
@@ -202,9 +202,9 @@ cited under the page's section on values.
 
 | ID | Row | Citation | Status |
 |---|---|---|---|
-| P-COMP-1 | row: a list of values | `[PROTOCOL Composite fields]` | not yet |
-| P-COMP-2 | column: named flag; its name, if named; data type; not null flag | `[PROTOCOL Composite fields]` | not yet |
-| P-COMP-3 | parameter: varying flag, 1 where the server gives CHARACTER VARYING of the longest length; data type | `[PROTOCOL Composite fields]` | not yet |
+| P-COMP-1 | row: a list of values | `[PROTOCOL Composite fields]` | done |
+| P-COMP-2 | column: named flag; its name, if named; data type; not null flag | `[PROTOCOL Composite fields]` | done |
+| P-COMP-3 | parameter: varying flag, 1 where the server gives CHARACTER VARYING of the longest length; data type | `[PROTOCOL Composite fields]` | done |
 | P-COMP-4 | failure: SQLCODE `i32 as u32`; SQLSTATE, 5 characters; message; cited flag and the rule; placed flag and the position, in characters; active flag; tail 7 to 15 | `[PROTOCOL Composite fields]` | not yet |
 
 ### The tail
