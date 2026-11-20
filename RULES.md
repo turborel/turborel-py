@@ -305,7 +305,8 @@ client's public interface. TLS,
 the hashes SCRAM needs and zlib come from the standard library's `ssl`,
 `hashlib`, `hmac` and `zlib`. The `ssl` module gives no `tls-exporter`,
 so SCRAM-SHA-256-PLUS binds the channel by `tls-server-end-point` alone,
-from the certificate the server presented, over TLS 1.2 and 1.3 alike.
+from the certificate the server presented, over TLS 1.2 and 1.3 alike
+(D8).
 
 #### D2. The language's standard API, over a low-level client of turborel-client's features
 
@@ -444,6 +445,11 @@ rule here, the rule is kept:
     'U'], leaving no transaction active; turborel-client keeps the flag
     of the statement before, and the driver clears it, so
     `in_transaction` is false after `change_user`.
+- Python's `ssl` exports no keying material, so SCRAM-SHA-256-PLUS
+  binds by `tls-server-end-point`, the certificate the server presented,
+  over TLS 1.2 and 1.3 alike, where turborel-client binds by
+  `tls-exporter` over TLS 1.3; the server takes either. The owner chose
+  this over a dependency that exports it.
 
 ### This driver's own
 

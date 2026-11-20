@@ -255,7 +255,7 @@ cited under the page's section on values.
 | P-MECH-3 | `certificate`, by the TLS client certificate's common name | `[PROTOCOL Mechanisms]` | done |
 | P-MECH-4 | `scram-sha-256`: client-first in Hello, server-first, client-final, server-final, an empty Answer (RFC 5802, RFC 7677) | `[PROTOCOL Mechanisms]` | done |
 | P-MECH-5 | The server's SCRAM signature checked before the last, empty Answer | `[PROTOCOL Mechanisms]` | done |
-| P-MECH-6 | `scram-sha-256-plus` bound by `tls-exporter`, as its GS2 header names | `[PROTOCOL Mechanisms]` | not yet |
+| P-MECH-6 | `scram-sha-256-plus` bound by `tls-exporter`, as its GS2 header names | `[PROTOCOL Mechanisms]` | done: bound by `tls-server-end-point` over TLS 1.3 too, as Python's `ssl` exports no keying material (RULES.md D8) |
 | P-MECH-7 | `scram-sha-256-plus` bound by `tls-server-end-point`, as its GS2 header names | `[PROTOCOL Mechanisms]` | done |
 
 ### Capabilities
@@ -557,7 +557,7 @@ From `doc/client/02-library.md`, The Client Library.
 | C-CONN-3 | Connect to a target, TCP or local, over TLS or not | `[CLIENT Connecting]` | done |
 | C-CONN-4 | SCRAM-SHA-256 of a password, refused (SQLSTATE 08006) unless the server proves it knows the user's verifier | `[CLIENT Connecting]` | done |
 | C-CONN-5 | SCRAM only over TLS, a Unix socket or a named pipe, unless the program asks for it in the clear | `[CLIENT Connecting]` | done |
-| C-CONN-6 | SCRAM-SHA-256-PLUS over TLS: by `tls-exporter` over TLS 1.3, by the server's certificate over TLS 1.2 | `[CLIENT Connecting]` | not yet |
+| C-CONN-6 | SCRAM-SHA-256-PLUS over TLS: by `tls-exporter` over TLS 1.3, by the server's certificate over TLS 1.2 | `[CLIENT Connecting]` | done: by the server's certificate over TLS 1.2 and 1.3 (RULES.md D8) |
 | C-CONN-7 | A TLS stream the program opened, bound before SCRAM-SHA-256-PLUS | `[CLIENT Connecting]` | done |
 | C-CONN-8 | `password`, sent whole, only over TLS, a Unix socket or a named pipe | `[CLIENT Connecting]` | done |
 | C-CONN-9 | `certificate`: TLS trusting a PEM file of authorities, presenting a certificate chain and key from two more | `[CLIENT Connecting]` | done |

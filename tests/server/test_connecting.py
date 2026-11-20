@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import socket
+import ssl
 import struct
 from typing import TYPE_CHECKING
 
@@ -11,6 +12,7 @@ import pytest
 from turborel import OperationalError
 from turborel.client import (
     Certificate,
+    ChannelBinding,
     Connection,
     KeyCache,
     Local,
@@ -190,6 +192,25 @@ def test_tls_and_scram_sha_256_plus(live: Live) -> None:
         )
     assert failure.value.sqlstate == "08006"
     assert "handshake" in failure.value.message
+
+
+@pytest.mark.parametrize("version", [ssl.TLSVersion.TLSv1_3, ssl.TLSVersion.TLSv1_2])
+def test_scram_plus_binds_by_the_server_s_certificate(
+    live: Live, version: ssl.TLSVersion
+) -> None:
+    """Verifies: [PROTOCOL Mechanisms] scram-sha-256-plus, its channel bound.
+
+    [CLIENT Connecting] SCRAM-SHA-256-PLUS over TLS 1.3 and over TLS 1.2,
+    bound by tls-server-end-point, the certificate the server presented,
+    as Python's ssl exports no keying material for tls-exporter (RULES.md
+    D8); a binding required and made, the server accepting it.
+    """
+    context = trusting(live.ca)
+    context.minimum_version = context.maximum_version = version
+    scram = Scram(live.password, channel_binding=ChannelBinding.REQUIRE)
+    conn = connect_tls((live.host, live.port), context, "ANN", scram, "localhost")
+    assert conn.authorization == "ANN"
+    conn.terminate()
 
 
 def test_a_client_certificate_proves_its_user(live: Live) -> None:

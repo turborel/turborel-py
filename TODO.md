@@ -23,11 +23,7 @@ Nothing is open: every row M1 names is done.
 
 ## M2 Connect
 
-- `tls-exporter`: P-MECH-6, and C-CONN-6's binding by `tls-exporter` over
-  TLS 1.3. Python's `ssl` exports no keying material (RULES.md D1), so
-  the driver binds SCRAM-SHA-256-PLUS by `tls-server-end-point`, which
-  the server takes over TLS 1.3 too. These rows wait on the owner's
-  decision: a dependency that exports it, or a Python whose `ssl` does.
+Nothing is open: every row M2 names is done.
 
 ## M3 Statements
 
