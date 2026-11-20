@@ -25,7 +25,9 @@ from turborel._codec.replies import (
     Status,
     Suspended,
     Timing,
+    completed_head,
     decode,
+    ends_request,
 )
 from turborel._codec.requests import Close, Ping
 
@@ -219,17 +221,6 @@ def test_a_lob_reply_is_data_or_a_locator() -> None:
             ord("K"),
             u32(0) + text("00000") + b"\x00" + b"\x03" + u32(1),
         ),  # a request's tag
-        (
-            ord("K"),
-            u32(0)
-            + text("00000")
-            + b"\x00"
-            + b"\x11"
-            + u32(1)
-            + u32(len(FAILURE) + 1)
-            + FAILURE
-            + b"\x00",
-        ),
         (ord("E"), FAILURE + b"\x10" + u32(0)),  # Complete's tag on a failure
         (ord("L"), b"\x02"),
         (ord("N"), text("01000")),  # cut short
@@ -259,3 +250,37 @@ def test_a_kind_is_read_in_the_direction_it_travels() -> None:
     assert decode(ord("C"), u32(0)) == Challenge(b"")
     assert Ping().encode()[0] == ord("G")
     assert decode(ord("G"), b"") == Pong()
+
+
+def test_a_malformed_condition_is_a_value_refused() -> None:
+    """Verifies: [PROTOCOL Values and fields] a condition the client cannot take.
+
+    [PROTOCOL Complete 'K'] tag 17 of a condition with bytes past its
+    end: SQLCODE -916, SQLSTATE TB916, its request failed alone; its head
+    still read.
+    """
+    body = (
+        u32(0)
+        + text("00000")
+        + b"\x01"
+        + b"\x05"
+        + b"\x11"
+        + u32(1)
+        + u32(len(FAILURE) + 1)
+        + FAILURE
+        + b"\x00"
+    )
+    with pytest.raises(OperationalError) as failure:
+        decode(ord("K"), body)
+    assert (failure.value.sqlcode, failure.value.sqlstate) == (-916, "TB916")
+    head = completed_head(ord("K"), body)
+    assert head is not None
+    assert (head.active, head.more) == (True, True)
+    assert ends_request(ord("K"), body) is False
+    assert completed_head(ord("B"), b"") is None
+    assert completed_head(ord("K"), b"\x00") is None
+    assert (
+        ends_request(ord("K"), b"\x00"),
+        ends_request(ord("D"), b""),
+        ends_request(ord("E"), b""),
+    ) == (True, False, True)

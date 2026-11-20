@@ -37,6 +37,10 @@ API_SQLCODE: Final = -910
 """turborel's SQLCODE for an interface used wrongly."""
 API_SQLSTATE: Final = "TB910"
 """turborel's SQLSTATE for an interface used wrongly."""
+CORRUPT_SQLCODE: Final = -916
+"""A value that cannot be taken: what Turborel calls damaged."""
+CORRUPT_SQLSTATE: Final = "TB916"
+"""turborel's SQLSTATE of a value that cannot be taken."""
 
 
 class _Condition(Exception):  # noqa: N818  # PEP 249 names the subclasses.
@@ -171,6 +175,21 @@ def unsendable(message: str) -> DataError:
         The error to raise.
     """
     return DataError(message, sqlcode=DATA_SQLCODE, sqlstate=DATA_EXCEPTION)
+
+
+def value_failure(message: str) -> OperationalError:
+    """A reply's value the client cannot take: SQLCODE -916, SQLSTATE TB916.
+
+    Its request fails alone, the connection kept, as turborel-client's
+    does [PROTOCOL Values and fields].
+
+    Args:
+        message: What is wrong with the value.
+
+    Returns:
+        The error to raise.
+    """
+    return OperationalError(message, sqlcode=CORRUPT_SQLCODE, sqlstate=CORRUPT_SQLSTATE)
 
 
 def beyond_limits(message: str) -> NotSupportedError:

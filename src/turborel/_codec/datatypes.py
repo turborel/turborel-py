@@ -288,7 +288,7 @@ def read_units(r: Reader) -> bool:
     units = r.u8()
     if units not in (tags.UNITS_CHARACTERS, tags.UNITS_OCTETS):
         msg = f"a length's units are {units}"
-        raise r.malformed(msg)
+        raise r.damaged(msg)
     return units == tags.UNITS_OCTETS
 
 

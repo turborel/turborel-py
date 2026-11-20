@@ -15,6 +15,7 @@ connect_local(path, user, mechanism) -> Connection
 connect_tls(address, context, user, mechanism, server_name=None) -> Connection
 connect_to(target, user, mechanism, timeouts=None, offer=None) -> Connection
 Connection.open(socket_or_file, user, mechanism, offer=None) -> Connection
+Connection.open_within(sock, user, mechanism, timeouts, offer=None) -> Connection
 
 Tcp(host, port=7422) | Local(path) | Tls(host, context, port=7422, server_name=None)
 Trust() | Password(password) | Certificate()
@@ -35,7 +36,10 @@ its name by `server_name`, the host's by default; `connect_to` to a
 `Target`, with timeouts and an offer of the program's. `Connection.open`
 logs in over a stream the program opened, which bounds its own waits;
 over a TLS socket the program binds SCRAM to it first,
-`mechanism.bind(tls_channel(sock))`.
+`mechanism.bind(tls_channel(sock))`. `Connection.open_within` logs in
+over a socket the program opened, bounded as `timeouts` say: each step
+of the login by `connect`, each wait after it by `read`, which
+`set_read_timeout` then changes.
 
 **Mechanisms.** `Trust` asks the server to trust the user as it names
 itself, which it does of a client of its own machine where
@@ -90,7 +94,7 @@ the server shows in INFORMATION_SCHEMA.CONNECTION_ATTRIBUTES.
 | `reset()` | the session as it was at login, its user kept |
 | `change_user(user, mechanism)` | the connection authenticated again as `user` |
 | `query(sql)` and the rest | statements, prepared statements and cursors ([Statements and Cursors](22-statements.md)) |
-| `terminate()` | the session ended, waiting for the close at most the read timeout, else 60 seconds |
+| `terminate()` | the session ended, its transaction as SESSION.COMMIT_AT_END says; a notice or status before a failing commit's failure read past, that failure raised; waiting for the close at most the read timeout, else 60 seconds, or over a stream given to `open` as its maker set it |
 | `close()` | the connection closed, the session not ended first |
 | `is_lost` | whether it is lost, every call then giving its failure |
 
@@ -103,7 +107,7 @@ connection of its own and waits for the server to close it.
 |---|---|
 | A password, or SCRAM, over plain TCP, before connecting | -919, 28000 |
 | A wrong user or password, or SCRAM's proof refused either way | -919, 28000 |
-| A server that cannot be reached, a TLS handshake that fails, a wait that runs out, a reply that cannot be read or is too long | -919, 08006 |
+| A server that cannot be reached, a TLS handshake that fails, a wait that runs out, a reply malformed or too long | -919, 08006 |
 | A method needing a capability the server did not grant, before it sends anything | -919, 08006 |
 | A statement cancelled | -920, TB920 |
 

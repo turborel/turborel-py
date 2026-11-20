@@ -210,7 +210,6 @@ def test_xml_types_carry_their_modifiers(data: bytes, expected: XmlType) -> None
         bytes([21]),
         bytes([28]),
         bytes([99]),
-        bytes([1]) + u32(1) + bytes([2]),  # units neither 0 nor 1
         bytes([13]) + u32(6) + u32(0) + u32(2) + u32(0),  # no field 6
         bytes([16]) + u32(0) + bytes([14]),  # cardinality 0
         bytes([16]) + u32(65_536) + bytes([14]),  # past 65 535
@@ -234,6 +233,17 @@ def test_a_type_that_cannot_be_read_fails_the_connection(data: bytes) -> None:
     with pytest.raises(OperationalError) as failure:
         read(data)
     assert (failure.value.sqlcode, failure.value.sqlstate) == (-919, "08006")
+
+
+def test_units_neither_0_nor_1_are_a_value_refused() -> None:
+    """Verifies: [PROTOCOL Values and fields] a value the client cannot take.
+
+    A length's units other than 0 or 1: SQLCODE -916, SQLSTATE TB916,
+    which fails its request alone.
+    """
+    with pytest.raises(OperationalError) as failure:
+        read(bytes([1]) + u32(1) + bytes([2]))
+    assert (failure.value.sqlcode, failure.value.sqlstate) == (-916, "TB916")
 
 
 def test_types_nest_at_most_16_deep() -> None:

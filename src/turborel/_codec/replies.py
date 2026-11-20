@@ -16,6 +16,7 @@ from turborel._codec.composites import Column, Parameter, read_column, read_para
 from turborel._codec.failures import Failure, Notice, read_failure, read_notice
 from turborel._codec.fields import Reader
 from turborel._codec.values import read_row
+from turborel._errors import OperationalError, value_failure
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -177,7 +178,8 @@ def decode(kind: int, body: bytes) -> Reply:
     """The reply of kind `kind` whose body is `body`, all of it read.
 
     Raises:
-        OperationalError: SQLSTATE 08006, of a kind of no reply or a body
+        OperationalError: SQLSTATE TB916, of a value the client cannot take,
+            its frame read whole; SQLSTATE 08006, of a kind of no reply or a body
             that cannot be read.
     """
     r = Reader(body, "reply")
@@ -202,9 +204,13 @@ def _prepared(r: Reader) -> Prepared:
 
 
 def _condition(r: Reader) -> Failure:
+    """A condition of Complete's tag 17: one that cannot be read is a value refused."""
     inner = Reader(r.octets(), "condition")
-    condition = read_failure(inner)
-    inner.finish()
+    try:
+        condition = read_failure(inner)
+        inner.finish()
+    except OperationalError as e:
+        raise value_failure(e.message) from e
     return condition
 
 
@@ -251,3 +257,44 @@ _READERS: Final[dict[int, Callable[[Reader], Reply]]] = {
     STATUS: lambda r: Status(r.string(), r.string()),
     PONG: lambda _: Pong(),
 }
+
+
+def completed_head(kind: int, body: bytes) -> Complete | None:
+    """The head of a frame of kind `kind`, if a Complete whose head reads.
+
+    Its SQLCODE, SQLSTATE and whether a transaction is active, and of its
+    tail the commit's position and whether more replies follow, which
+    come before any field a client may fail to take [PROTOCOL Values and
+    fields].
+    """
+    if kind != COMPLETE:
+        return None
+    r = Reader(body, "reply")
+    try:
+        head = Complete(r.i32(), r.string(), r.flag())
+        reading = tail.Tail(_COMPLETE_TAIL)
+        while (tag := reading.next(r)) is not None:
+            if tag == tail.POSITION:
+                head = replace(head, position=r.u64())
+            elif tag == tail.MORE:
+                head = replace(head, more=True)
+            else:
+                break
+    except OperationalError:
+        return None
+    return head
+
+
+def ends_request(kind: int, body: bytes) -> bool:
+    """Whether a reply of kind `kind`, decoded or not, is its request's last.
+
+    A Description, Rows, a Notice or a Status has more after it; a
+    Complete has if its tail says more (tag 5); any other reply ends its
+    request's.
+    """
+    if kind in (DESCRIPTION, ROWS, NOTICE, STATUS):
+        return False
+    if kind == COMPLETE:
+        head = completed_head(kind, body)
+        return head is None or not head.more
+    return True

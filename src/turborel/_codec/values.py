@@ -53,6 +53,10 @@ _MOMENT_TAGS: Final = {
 }
 
 
+_STORED: Final = (18, 19)
+"""The value tags of the server's stored form of a large object, never sent."""
+
+
 def read_value(r: Reader) -> object:
     """The value `r` holds next, as Python holds it.
 
@@ -64,7 +68,9 @@ def read_value(r: Reader) -> object:
     read = _READERS.get(tag)
     if read is None:
         msg = f"no value has tag {tag}"
-        raise r.malformed(msg)
+        # Tags 18 and 19, the server's stored form, are a value refused
+        # (RULES.md D8); another, a frame that cannot be read.
+        raise r.damaged(msg) if tag in _STORED else r.malformed(msg)
     return read(r)
 
 
@@ -130,7 +136,7 @@ def _boolean(r: Reader) -> bool:
     byte = r.u8()
     if byte not in _BOOLEANS:
         msg = f"{byte} is not a truth value"
-        raise r.malformed(msg)
+        raise r.damaged(msg)
     return byte == 1
 
 
@@ -184,7 +190,7 @@ def _structured(r: Reader) -> Structured:
 
 
 def _json(r: Reader) -> object:
-    return jsontree.decode(r.octets(), r.malformed)
+    return jsontree.decode(r.octets(), r.damaged, r.beyond)
 
 
 def _uuid(r: Reader) -> uuid.UUID:

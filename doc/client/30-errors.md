@@ -66,14 +66,15 @@ The failures the driver raises itself:
 
 | Condition | Class | SQLCODE, SQLSTATE |
 |---|---|---|
-| A server that cannot be reached, a TLS handshake that fails, a wait that runs out, a reply that cannot be read, is out of turn or is too long | `OperationalError` | -919, 08006 |
+| A server that cannot be reached, a TLS handshake that fails, a wait that runs out, a reply malformed, out of turn or too long | `OperationalError` | -919, 08006 |
+| A reply holding a value the driver cannot take, its statement's other replies read past and the connection kept ([Values](23-values.md)) | `OperationalError` | -916, TB916 |
 | A method needing a capability the server did not grant, before it sends anything | `OperationalError` | -919, 08006 |
 | A password, or SCRAM, over plain TCP, before connecting | `OperationalError` | -919, 28000 |
 | A value of a type the protocol cannot carry | `DataError` | -301, 22000 |
 | A number its field cannot hold, or not finite | `DataError` | -301, 22003 |
 | A datetime its fields cannot hold | `DataError` | -301, 22008 |
 | An XML value whose nodes are asked for, not well-formed or declaring a document type | `DataError` | -301, 2200M |
-| A value past the protocol's limits: nested deeper than 16, a multiset of more than 65 535 elements, a JSON value past 128 levels or 256 MiB | `NotSupportedError` | -900, 0A000 |
+| A value past the protocol's limits: nested deeper than 16, a multiset of more than 65 535 elements, a JSON value past 128 levels or 256 MiB, sent or received | `NotSupportedError` | -900, 0A000 |
 | A large object held whole freed or held as if by its locator | `DataError` | -301, 22000 |
 | An import's input that cannot be read ([Copy, Import and Export](25-copy.md)) | `ImportFailure` | -301, 22000 |
 | Attributes past their bounds: more than 32, a name not 1 to 64 bytes, a value past 1024, before anything is sent | `OperationalError` | -919, 08006 |

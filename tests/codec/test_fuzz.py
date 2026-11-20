@@ -13,11 +13,11 @@ import datetime as dt
 import random
 import uuid
 from decimal import Decimal
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Final
 
 import pytest
 
-from turborel import OperationalError
+from turborel import NotSupportedError, OperationalError
 from turborel._codec import compress, jsontree, jsonwrite, replies
 from turborel._codec.datatypes import read_data_type
 from turborel._codec.fields import I128_MAX, I128_MIN, Reader, Writer
@@ -134,13 +134,17 @@ CORPUS = [
 ]
 
 
-def outcome(call: Callable[[], object]) -> OperationalError | None:
-    """The connection failure `call` raises, or None if it reads."""
+def outcome(call: Callable[[], object]) -> OperationalError | NotSupportedError | None:
+    """The failure `call` raises, or None if it reads."""
     try:
         call()
-    except OperationalError as e:
+    except (OperationalError, NotSupportedError) as e:
         return e
     return None
+
+
+REFUSALS: Final = {(-919, "08006"), (-916, "TB916"), (-900, "0A000")}
+"""A frame malformed, a value the client cannot take, or one past the limits."""
 
 
 def damaged(rng: random.Random, body: bytes) -> bytes:
@@ -162,9 +166,11 @@ def damaged(rng: random.Random, body: bytes) -> bytes:
 def test_a_damaged_reply_is_read_or_fails_the_connection() -> None:
     """Verifies: [PROTOCOL Errors and notices] a malformed message fails the connection.
 
-    Of 3000 replies damaged from a fixed seed, each is read or refused
-    with SQLCODE -919 and SQLSTATE 08006, and no other exception reaches
-    the caller (RULES.md R-ERR-1, R-SAFE-1).
+    Of 3000 replies damaged from a fixed seed, each is read or refused:
+    as malformed, SQLCODE -919 and SQLSTATE 08006; or of a value the client
+    cannot take, -916 and TB916, or past a limit, -900 and 0A000
+    [PROTOCOL Values and fields]; and no other exception reaches the
+    caller (RULES.md R-ERR-1, R-SAFE-1).
     """
     rng = random.Random(SEED)
     refused = 0
@@ -175,7 +181,7 @@ def test_a_damaged_reply_is_read_or_fails_the_connection() -> None:
         body = damaged(rng, body)
         error = outcome(lambda: replies.decode(kind, body))  # noqa: B023  # Called at once.
         if error is not None:
-            assert (error.sqlcode, error.sqlstate) == (-919, "08006")
+            assert (error.sqlcode, error.sqlstate) in REFUSALS
             refused += 1
     assert 0 < refused < CASES
 
@@ -189,7 +195,8 @@ def _data_type(data: bytes) -> object:
 
 
 def _json(data: bytes) -> object:
-    return jsontree.decode(data, Reader(b"", "reply").malformed)
+    r = Reader(b"", "reply")
+    return jsontree.decode(data, r.damaged, r.beyond)
 
 
 @pytest.mark.parametrize(
@@ -202,7 +209,8 @@ def test_bytes_at_random_never_raise_another_exception(
 ) -> None:
     """Verifies: [DESIGN] D13 a value, a type, a JSON value or a `z` frame at random.
 
-    Each is read, or refused as a connection failure, and nothing else.
+    Each is read, or refused as malformed or as a value refused, and
+    nothing else.
     """
     rng = random.Random(SEED)
     for _ in range(CASES):
@@ -210,7 +218,7 @@ def test_bytes_at_random_never_raise_another_exception(
         if rng.randrange(2):
             data = bytes([rng.choice((1, 16, 17, 22, 23, 25, 26))]) + data
         error = outcome(lambda: read(data))  # noqa: B023  # Called at once.
-        assert error is None or error.sqlstate == "08006"
+        assert error is None or (error.sqlcode, error.sqlstate) in REFUSALS
 
 
 def _decimal(rng: random.Random) -> Decimal:

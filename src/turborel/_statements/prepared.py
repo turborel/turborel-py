@@ -170,7 +170,8 @@ def describe_cursor(
     statement, number = cursor
     session.needs(DESCRIBE)
     yield Send(requests.Describe(statement.number, cursor=number).encode())
-    reply = yield from receive(session)
+    # Answered by a Description alone, which no rows follow.
+    reply = yield from receive(session, one=True)
     if isinstance(reply, Description):
         return reply.columns
     if isinstance(reply, Error):

@@ -41,6 +41,14 @@ with tag 1, as a CHARACTER value does.
 A value sent of any other Python type is refused before anything is
 sent, with `turborel.DataError`, SQLSTATE 22000.
 
+Tags 5, 7, 10 and 12 are read as tags 1, 6, 9 and 11 are, as
+turborel-protocol's reader takes them: CHARACTER VARYING as CHARACTER,
+BINARY VARYING as BINARY, TIME WITH TIME ZONE as TIME and TIMESTAMP WITH
+TIME ZONE as TIMESTAMP; the server writes them with the four tags of the
+table. Tags 18 and 19, the server's stored form of a large object, are
+refused as values the driver cannot take, SQLSTATE TB916, the
+connection kept.
+
 ## The bounds of each
 
 **Exact numbers.** An exact number is its units, from -2^127 to

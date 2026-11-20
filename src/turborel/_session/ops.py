@@ -25,10 +25,14 @@ from turborel._codec.replies import (
     Ready,
     Rows,
     Status,
+    completed_head,
     decode,
+    ends_request,
 )
-from turborel._errors import OperationalError
+from turborel._errors import Error as DriverError
+from turborel._errors import OperationalError, connection_failure
 from turborel._session.capabilities import CHANGE_USER, PING, RESET
+from turborel._session.raising import raised
 
 if TYPE_CHECKING:
     from turborel._auth.mechanisms import Mechanism
@@ -57,6 +61,8 @@ RECEIVE: Final = _Receive()
 Op = Send | _Receive
 """A step of a request."""
 
+_CONNECTION_EXCEPTION: Final = "08"
+
 Frame = tuple[int, bytes]
 """A frame read: its kind and its body."""
 
@@ -66,28 +72,102 @@ Steps = Generator[Op, Frame | None, _T]
 """A request: its steps, then what it gives."""
 
 
-def receive(session: Session) -> Steps[Reply]:
-    """The next reply of a statement, each Notice and Status before it taken."""
-    while True:
-        frame = yield RECEIVE
-        if frame is None:
-            raise session.lose_by("cannot receive: no frame was read")
-        compression = session.told.compress is not None
-        try:
-            kind, body = unwrap(
-                *frame, compression=compression, max_body=session.max_body
-            )
-            reply = decode(kind, body)
-        except OperationalError as e:
+def _frame(session: Session) -> Steps[Frame]:
+    """The next frame, whole and inflated; else the connection is lost."""
+    frame = yield RECEIVE
+    if frame is None:
+        raise session.lose_by("cannot receive: no frame was read")
+    compression = session.told.compress is not None
+    try:
+        return unwrap(*frame, compression=compression, max_body=session.max_body)
+    except OperationalError as e:
+        raise session.lose(e) from e
+
+
+def _took(session: Session, reply: Reply) -> Reply | None:
+    """`reply`, unless a Notice or Status, which is taken; its end noted."""
+    if isinstance(reply, Notice):
+        session.told.notice(reply)
+        return None
+    if isinstance(reply, Status):
+        session.told.settings[reply.name] = reply.value
+        return None
+    return session.noted(reply)
+
+
+def _decoded(session: Session, kind: int, body: bytes) -> Reply:
+    """The reply of a frame read whole.
+
+    Raises:
+        Error: Of a malformed frame, SQLSTATE 08006, the connection lost;
+            of a value the client cannot take, that value's failure, the
+            connection kept, a Complete's head noted as its whole would be.
+    """
+    try:
+        return decode(kind, body)
+    except DriverError as e:
+        if e.sqlstate.startswith(_CONNECTION_EXCEPTION):
             raise session.lose(e) from e
+        head = completed_head(kind, body)
+        if head is not None:
+            session.noted(head)
+        raise
+
+
+def receive(session: Session, *, one: bool = False) -> Steps[Reply]:
+    """The next reply of a statement, each Notice and Status before it taken.
+
+    A reply holding a value the client cannot take fails the request
+    alone, once the rest of its replies are read past, to the one that
+    ends them, unless the request is answered by `one` reply [PROTOCOL
+    Values and fields] (RULES.md D8).
+    """
+    while True:
+        kind, body = yield from _frame(session)
+        try:
+            reply = _decoded(session, kind, body)
+        except DriverError:
+            if not one:
+                yield from _drained(session, kind, body)
+            raise
         if session.tap is not None and isinstance(reply, Description | Rows):
             session.tap(kind, body)
-        if isinstance(reply, Notice):
-            session.told.notice(reply)
-        elif isinstance(reply, Status):
-            session.told.settings[reply.name] = reply.value
-        else:
-            return session.noted(reply)
+        taken = _took(session, reply)
+        if taken is not None:
+            return taken
+
+
+def _drained(session: Session, kind: int, body: bytes) -> Steps[None]:
+    """Read past the rest of a request's replies, to the one that ends them."""
+    while not ends_request(kind, body):
+        kind, body = yield from _frame(session)
+        try:
+            _took(session, _decoded(session, kind, body))
+        except DriverError:
+            # Another value refused is read past as the first was; a
+            # malformed frame has lost the connection.
+            if session.is_lost():
+                raise
+
+
+def terminated(session: Session, frame: Frame) -> None:
+    """Take a frame the server sent after Terminate, before it closed.
+
+    A Notice, a Status or a Pong is read past; an Error, as of a commit
+    that failed as the session ended, is raised; any other reply is out
+    of turn [PROTOCOL Terminate 'X'].
+
+    Raises:
+        Error: The server's failure, or a connection failure.
+    """
+    compression = session.told.compress is not None
+    kind, body = unwrap(*frame, compression=compression, max_body=session.max_body)
+    reply = decode(kind, body)
+    if isinstance(reply, Error):
+        raise raised(reply.failure)
+    if not isinstance(reply, Notice | Status | Pong):
+        msg = "the server answered Terminate"
+        raise connection_failure(msg)
 
 
 def login(

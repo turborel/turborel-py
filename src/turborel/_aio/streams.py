@@ -90,12 +90,18 @@ class AsyncStream:
         kind, length = decode_header(await self._read(HEADER_BYTES), max_body)
         return kind, (await self._read(length)) if length else b""
 
-    async def read_to_end(self, most: int) -> bytes:
-        """What the server sends until it closes, at most `most` bytes."""
+    async def read_frame_or_end(self, max_body: int) -> tuple[int, bytes] | None:
+        """The next frame, as `read_frame` reads it; None if the server closed first."""
         if self._blocking is not None:
-            return await asyncio.to_thread(self._blocking.read_to_end, most)
+            return await asyncio.to_thread(self._blocking.read_frame_or_end, max_body)
         assert self._reader is not None  # noqa: S101
-        return await self._bounded(self._reader.read(most), "receive")
+        first = await self._bounded(self._reader.read(1), "receive")
+        if not first:
+            return None
+        kind, length = decode_header(
+            first + await self._read(HEADER_BYTES - 1), max_body
+        )
+        return kind, (await self._read(length)) if length else b""
 
     def close(self) -> None:
         """Close it; closing one already closed does nothing."""

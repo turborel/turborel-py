@@ -459,15 +459,11 @@ rule here, the rule is kept:
   does as the page says from b40bd830.
 - Where turborel-client is inconsistent, every Turborel driver keeps one
   rule, decided for all of them:
-  - A reply value that cannot be decoded loses the connection, SQLCODE
-    -919 and SQLSTATE 08006: a length's units or a large object's kind
-    other than 0 or 1, a truth byte other than 0 or 1, a damaged JSON
-    document, one nested past 128 or longer than 256 MiB, a malformed
-    condition of Complete's tag 17; turborel-client gives TB916 or
-    0A000 on some of these and keeps the connection, out of step.
   - Value tags 18 and 19, the server's stored form of a large object,
-    are refused as malformed, -919 and 08006, though turborel-protocol's
-    reader takes them.
+    are refused as a value the client cannot take, SQLCODE -916 and
+    SQLSTATE TB916, its request failed alone and the connection kept,
+    as turborel-client fails any such value; turborel-protocol's reader
+    takes them.
   - Attributes past their bounds are refused before anything is sent,
     -919 and 08006, the connection kept; turborel-client sends them, and
     the server fails the connection.
@@ -538,8 +534,14 @@ it, as Sphinx and the documentation tools read it.
 #### D13. The codec keeps turborel-protocol's bounds, and refuses what it does
 
 The codec reads what turborel-protocol reads, and refuses what it
-refuses, each failure a connection failure (SQLCODE -919, SQLSTATE
-08006). Its bounds are turborel-protocol's: arrays, rows, multisets and
+refuses. A frame malformed, cut short or with bytes after its last
+field, is a connection failure (SQLCODE -919, SQLSTATE 08006), the
+connection lost. A value the client cannot take in a frame read whole
+(a truth or units byte other than 0 or 1, damaged JSON, a malformed
+condition of Complete's tag 17, tags 18 and 19) fails its request alone
+with the value's error, SQLCODE -916 and SQLSTATE TB916, or -900 and
+0A000 past a limit, once the rest of the request's replies are read past
+to its last, as turborel-client does (`_session/ops.py`). Its bounds are turborel-protocol's: arrays, rows, multisets and
 structured values, as values and as types, nest at most 16 deep
 (`MAX_TYPE_NESTING`); a multiset holds at most 65 535 elements, and an
 array type's maximum cardinality is 1 to 65 535; a row type has a field;
@@ -548,7 +550,7 @@ a plug-in's type has at most two parameters; a message carries at most
 JSON document nests at most 128 deep. Where turborel-protocol reads a
 value tag the page does not list, 5, 7, 10 and 12, the codec reads it as
 turborel-protocol does; 18 and 19, which it reads as the server's stored
-form of a large object, never sent, the codec refuses.
+form of a large object, never sent, the codec refuses, as D8 says.
 
 What a program sends is checked before a byte is written, by the same
 bounds, so the server never has to refuse it: a number its field cannot

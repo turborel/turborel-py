@@ -10,13 +10,8 @@ from typing import TYPE_CHECKING, TypeVar
 
 from turborel._client.cancel import Canceller
 from turborel._codec import requests
-from turborel._codec.failures import Notice
-from turborel._codec.frames import HEADER_BYTES, decode_header
-from turborel._codec.replies import Error as ErrorReply
-from turborel._codec.replies import Pong, Status, decode
 from turborel._errors import connection_failure
 from turborel._session import ops
-from turborel._session.raising import raised
 from turborel._session.runner import run
 from turborel._session.state import Session
 from turborel._transport.timeouts import TERMINATE_WITHIN
@@ -25,6 +20,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
     from turborel._auth.mechanisms import Mechanism
+    from turborel._codec.failures import Notice
     from turborel._session.capabilities import Offer
     from turborel._session.ops import Steps
     from turborel._transport.stream import Stream
@@ -180,8 +176,10 @@ class Core:
     def terminate(self) -> None:
         """End the session, its transaction as SESSION.COMMIT_AT_END says.
 
-        It waits for the server to close at most the read timeout, else 60
-        seconds [PROTOCOL Terminate 'X'] [CLIENT Connecting].
+        On a stream that bounds itself it waits for the server to close at
+        most the read timeout, else 60 seconds; on a stream given to
+        `open`, as its maker set it. A Notice or Status before an Error is
+        read past [PROTOCOL Terminate 'X'] [CLIENT Connecting].
 
         Raises:
             Error: The failure of the commit the end made, or the connection's.
@@ -193,19 +191,13 @@ class Core:
             self._stream.write(requests.Terminate().encode())
             if self._bounded:
                 self._stream.set_timeout(self._read_timeout or TERMINATE_WITHIN)
-            rest = self._stream.read_to_end(session.max_body + HEADER_BYTES)
+            while (
+                frame := self._stream.read_frame_or_end(session.max_body)
+            ) is not None:
+                ops.terminated(session, frame)
         finally:
             self._stream.close()
             session.lose_by("the session was terminated")
-        if len(rest) < HEADER_BYTES:
-            return
-        kind, _ = decode_header(rest[:HEADER_BYTES], session.max_body)
-        reply = decode(kind, rest[HEADER_BYTES:])
-        if isinstance(reply, ErrorReply):
-            raise raised(reply.failure)
-        if not isinstance(reply, Notice | Status | Pong):
-            msg = "the server answered Terminate"
-            raise connection_failure(msg)
 
     def close(self) -> None:
         """Close the connection without ending the session first."""

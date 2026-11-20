@@ -16,7 +16,14 @@ from __future__ import annotations
 import struct
 from typing import TYPE_CHECKING, Final, TypeVar
 
-from turborel._errors import OperationalError, connection_failure, misuse
+from turborel._errors import (
+    NotSupportedError,
+    OperationalError,
+    beyond_limits,
+    connection_failure,
+    misuse,
+    value_failure,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterable
@@ -80,6 +87,22 @@ class Reader:
         """
         msg = f"a {self._what} received is malformed at byte {self._at}: {why}"
         return connection_failure(msg)
+
+    def damaged(self, why: str) -> OperationalError:
+        """The failure of a value that cannot be taken, its frame read whole.
+
+        SQLCODE -916, SQLSTATE TB916: its request fails, the connection
+        kept [PROTOCOL Values and fields].
+        """
+        where = f"a {self._what} received, at byte {self._at}"
+        msg = f"{where}, holds a value that cannot be taken: {why}"
+        return value_failure(msg)
+
+    def beyond(self, why: str) -> NotSupportedError:
+        """The failure of a value past Turborel's limits: -900, 0A000."""
+        return beyond_limits(
+            f"a {self._what} received holds a value past the limits: {why}"
+        )
 
     def take(self, count: int) -> bytes:
         """The next `count` bytes.

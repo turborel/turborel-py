@@ -33,8 +33,9 @@ def key(text: str) -> bytes:
 
 
 def read(document: bytes) -> JsonValue:
-    """The JSON value of `document`, as a reply's value."""
-    return decode(document, Reader(b"", "reply").malformed)
+    """The JSON value of `document`, as a reply's value is read."""
+    r = Reader(b"", "reply")
+    return decode(document, r.damaged, r.beyond)
 
 
 # {"b": 1, "a": 2}, by D89's layout: version 1, object 11, count 2, size
@@ -169,8 +170,9 @@ def nested(depth: int) -> bytes:
 def test_arrays_and_objects_nest_at_most_128_deep() -> None:
     """Verifies: [DESIGN] D13 a JSON document nests at most 128 deep, both ways."""
     assert read(nested(129)) is not None
-    with pytest.raises(OperationalError):
+    with pytest.raises(NotSupportedError) as deeper:
         read(nested(130))
+    assert (deeper.value.sqlcode, deeper.value.sqlstate) == (-900, "0A000")
     deep: list[object] = []
     for _ in range(129):
         deep = [deep]
@@ -201,16 +203,17 @@ def test_arrays_and_objects_nest_at_most_128_deep() -> None:
         OBJECT[:6] + u32(29) + OBJECT[10:] + bytes(1),  # a size not its members'
     ],
 )
-def test_damaged_octets_fail_the_connection(document: bytes) -> None:
+def test_damaged_octets_are_a_value_refused(document: bytes) -> None:
     """Verifies: [PROTOCOL Values] a JSON value checked whole as it is read.
 
     Turborel's RULES.md D89: a version other than 1, a node past its
     document, a string not UTF-8, an offset or a size not its parts', a
-    directory not sorted: SQLCODE -919, SQLSTATE 08006.
+    directory not sorted: [PROTOCOL Values and fields] a value the client
+    cannot take, SQLCODE -916, SQLSTATE TB916, its request failed alone.
     """
     with pytest.raises(OperationalError) as failure:
         read(document)
-    assert (failure.value.sqlcode, failure.value.sqlstate) == (-919, "08006")
+    assert (failure.value.sqlcode, failure.value.sqlstate) == (-916, "TB916")
 
 
 @pytest.mark.parametrize(
@@ -295,16 +298,16 @@ def test_an_exact_number_keeps_its_written_scale() -> None:
     assert read(encode(wide)) == wide
 
 
-def test_a_document_read_past_256_mib_loses_the_connection(
+def test_a_document_read_past_256_mib_is_past_the_limits(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Verifies: [PROTOCOL JSON values] a document at most 256 MiB, read too.
 
-    [PROTOCOL Values] one longer than the bound is a reply that cannot be
-    read, which loses the connection (SQLCODE -919, SQLSTATE 08006), as
-    RULES.md D8 decides for every driver; the bound is lowered here.
+    [PROTOCOL Values and fields] one longer is a value past a limit,
+    SQLCODE -900, SQLSTATE 0A000, its request failed alone; the bound is
+    lowered here.
     """
     monkeypatch.setattr(jsontree, "MAX_DOCUMENT_OCTETS", 8)
-    with pytest.raises(OperationalError) as long:
+    with pytest.raises(NotSupportedError) as long:
         read(bytes([1, 8]) + key("abcdefgh")[:4] + b"abcdefgh")
-    assert (long.value.sqlcode, long.value.sqlstate) == (-919, "08006")
+    assert (long.value.sqlcode, long.value.sqlstate) == (-900, "0A000")

@@ -2,7 +2,7 @@
 
 Taken from turborel's doc/client/05-protocol.md (`PROTOCOL`), and from
 02-library.md and 02-library-connections.md (`CLIENT`), at main's commit
-b48f85b2. A heading the documents rename or add is changed here in the
+e97e0aa4. A heading the documents rename or add is changed here in the
 same commit as the code that follows it (RULES.md D6, R-TRACE-2). Each
 document's title, its first heading, is one of its headings too.
 """

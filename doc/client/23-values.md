@@ -45,9 +45,18 @@ SQLSTATE 22008; parts nested past 16 levels, a multiset of more than
 65 535 elements or a JSON value past 128 levels or 256 MiB,
 `NotSupportedError`, SQLSTATE 0A000.
 
-A value the server sends that cannot be read fails the connection,
-`OperationalError`, SQLCODE -919 and SQLSTATE 08006, as does a datetime
-past Python's years 1 to 9999.
+A value the server sends that the driver cannot take, in a reply
+otherwise whole, fails its statement alone: a truth value or a length's
+units other than 0 or 1, a damaged JSON value, a malformed condition of
+a completion, or the server's stored form of a large object, tags 18
+and 19, which no reply should hold, `OperationalError`, SQLCODE -916
+and SQLSTATE TB916; a JSON value past 128 levels or 256 MiB,
+`NotSupportedError`, SQLSTATE 0A000. The rest of the statement's replies
+are read past, and the connection goes on. A reply that is malformed,
+cut short or with bytes after its last field, fails the connection,
+`OperationalError`, SQLCODE -919 and SQLSTATE 08006, as does any other
+value that cannot be read, a datetime past Python's years 1 to 9999
+among them.
 
 ## SEE ALSO
 

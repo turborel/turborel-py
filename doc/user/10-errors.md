@@ -79,10 +79,13 @@ the key (1) is held by another row
 A connection exception, of SQLSTATE class 08 but 08003, ends the
 connection, as do credentials refused as it is made, and any failure of
 its stream: a server gone, a read that waits past its timeout, a reply
-that cannot be read. The connection is then lost, `is_lost` is true,
+that is malformed. The connection is then lost, `is_lost` is true,
 and every later call raises the same failure again. A method that needs
 a capability the server did not grant fails with SQLSTATE 08006 before
-it sends anything, and the connection goes on.
+it sends anything, and the connection goes on. So does a statement whose
+reply holds a value the driver cannot take, such as a damaged JSON
+value: it fails with SQLSTATE TB916, the rest of its replies read past,
+and the next statement takes its own.
 
 ## Warnings, notices and conditions
 

@@ -91,6 +91,16 @@ class Stream:
         kind, length = decode_header(self.read_exact(HEADER_BYTES), max_body)
         return kind, self.read_exact(length)
 
+    def read_frame_or_end(self, max_body: int) -> tuple[int, bytes] | None:
+        """The next frame, as `read_frame` reads it; None if the server closed first."""
+        first = self._read(1)
+        if not first:
+            return None
+        kind, length = decode_header(
+            first + self.read_exact(HEADER_BYTES - 1), max_body
+        )
+        return kind, self.read_exact(length)
+
     def read_to_end(self, most: int) -> bytes:
         """What the server sends until it closes, at most `most` bytes."""
         parts: list[bytes] = []

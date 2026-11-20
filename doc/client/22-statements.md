@@ -105,7 +105,8 @@ Without `conditions` a statement's conditions come as notices, with
 | A statement deallocated, or of no such number | the server's, 26000 |
 | A value of a type the protocol cannot carry | -301, 22000 |
 | A value its field cannot hold | -301, 22003 or 22008 |
-| A reply out of turn | -919, 08006, the connection lost |
+| A reply holding a value the driver cannot take, the rest of the statement's replies read past, the connection kept | -916, TB916; past a limit, -900, 0A000 |
+| A reply out of turn, or malformed | -919, 08006, the connection lost |
 
 ## EXAMPLES
 

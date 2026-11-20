@@ -39,7 +39,7 @@ from turborel._codec.datatypes import Moment
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    from turborel._errors import OperationalError
+    from turborel._errors import Error
 
 FORMAT_VERSION: Final = 1
 """The first octet of every document."""
@@ -96,24 +96,31 @@ JsonValue = (
 _Read = tuple[JsonValue, int]
 
 
-def decode(data: bytes, fail: Callable[[str], OperationalError]) -> JsonValue:
+def decode(
+    data: bytes,
+    fail: Callable[[str], Error],
+    beyond: Callable[[str], Error] | None = None,
+) -> JsonValue:
     """The JSON value of the document `data`, checked whole.
 
     Args:
         data: The document's octets.
         fail: Makes the error of damaged octets, given why.
+        beyond: Makes the error of a document past the limits, nested too
+            deep or too long; `fail` if None.
 
     Raises:
-        OperationalError: SQLSTATE 08006, from `fail`, if the octets are
-            damaged, or more than 256 MiB.
+        Error: From `fail`, if the octets are damaged; from `beyond`, if
+            the document nests past 128 or is longer than 256 MiB.
     """
+    past = beyond or fail
     if len(data) > MAX_DOCUMENT_OCTETS:
         msg = f"a JSON value's stored form is longer than {MAX_DOCUMENT_OCTETS} octets"
-        raise fail(msg)
+        raise past(msg)
     if len(data) < 2 or data[0] != FORMAT_VERSION:  # noqa: PLR2004  # Its version, then a node.
         msg = "a JSON value does not begin with its format's version"
         raise fail(msg)
-    value, length = _Tree(data, fail).node(1, len(data), 0)
+    value, length = _Tree(data, fail, past).node(1, len(data), 0)
     if 1 + length != len(data):
         msg = "octets follow a JSON value's root"
         raise fail(msg)
@@ -131,9 +138,12 @@ def _unsigned(raw: bytes) -> int:
 class _Tree:
     """Reads a document's nodes, each within the bounds its container sets."""
 
-    def __init__(self, data: bytes, fail: Callable[[str], OperationalError]) -> None:
+    def __init__(
+        self, data: bytes, fail: Callable[[str], Error], beyond: Callable[[str], Error]
+    ) -> None:
         self._data = data
         self._fail = fail
+        self._beyond = beyond
         self._scalars: dict[int, Callable[[int, int], _Read]] = {
             INTEGER: self.integer,
             DECIMAL: self.decimal,
@@ -144,7 +154,7 @@ class _Tree:
             DATETIME: self.datetime,
         }
 
-    def damaged(self, why: str) -> OperationalError:
+    def damaged(self, why: str) -> Error:
         """The error of damaged octets."""
         return self._fail(f"a JSON value's octets are damaged: {why}")
 
@@ -158,8 +168,8 @@ class _Tree:
     def node(self, at: int, end: int, depth: int) -> _Read:
         """The value of the node at `at`, before `end`, and the octets it takes."""
         if depth > MAX_DEPTH:
-            msg = "arrays and objects nest too deep"
-            raise self.damaged(msg)
+            msg = "a JSON value's arrays and objects nest too deep"
+            raise self._beyond(msg)
         tag = self.take(at, 1, end)[0]
         if tag in (NULL, FALSE, TRUE):
             return (None, False, True)[tag], 1

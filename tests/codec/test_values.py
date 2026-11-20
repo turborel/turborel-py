@@ -227,11 +227,8 @@ def nested_arrays(depth: int) -> bytes:
 @pytest.mark.parametrize(
     "data",
     [
-        bytes([18]),  # the server's stored form of a CLOB, never sent
-        bytes([19]),
         bytes([28]),
         bytes([99]),
-        bytes([14, 2]),  # a truth value of 2
         bytes([20, 2]) + u32(0),  # a large object of kind 2
         bytes([20, 0]) + u32(1) + b"\xff",  # a CLOB not UTF-8
         bytes([27]) + u32(15) + bytes(15),  # a UUID of 15 octets
@@ -240,7 +237,6 @@ def nested_arrays(depth: int) -> bytes:
         bytes([15]) + i128(150) + u32((-2) & 0xFFFF_FFFF),  # a DECFLOAT not canonical
         bytes([22]) + u32(65_536) + bytes(65_536),  # past a multiset's cardinality
         bytes([13]) + u32(6) + u32(0) + u32(0) + u32(0) + i128(0),  # no field 6
-        bytes([25]) + u32(2) + bytes([2, 0]),  # a JSON value of version 2
         nested_arrays(17),
     ],
 )
@@ -253,6 +249,29 @@ def test_a_value_that_cannot_be_read_fails_the_connection(data: bytes) -> None:
     with pytest.raises(OperationalError) as failure:
         read(data)
     assert (failure.value.sqlcode, failure.value.sqlstate) == (-919, "08006")
+
+
+@pytest.mark.parametrize(
+    ("data", "sqlstate"),
+    [
+        (bytes([18]), "TB916"),  # the server's stored form of a CLOB, never sent
+        (bytes([19]), "TB916"),
+        (bytes([14, 2]), "TB916"),  # a truth value of 2
+        (bytes([25]) + u32(2) + bytes([2, 0]), "TB916"),  # a JSON value of version 2
+        (bytes([25]) + u32(2) + bytes([1, 99]), "TB916"),  # a node of no tag
+    ],
+)
+def test_a_value_the_client_cannot_take_is_refused_alone(
+    data: bytes, sqlstate: str
+) -> None:
+    """Verifies: [PROTOCOL Values and fields] a value the client cannot take.
+
+    Its request fails with the value's error, not of class 08: SQLCODE
+    -916, SQLSTATE TB916; tags 18 and 19 among them (RULES.md D8).
+    """
+    with pytest.raises(OperationalError) as failure:
+        read(data)
+    assert (failure.value.sqlcode, failure.value.sqlstate) == (-916, sqlstate)
 
 
 def test_arrays_nest_16_deep() -> None:

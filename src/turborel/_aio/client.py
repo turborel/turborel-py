@@ -11,14 +11,9 @@ from typing import TYPE_CHECKING, TypeVar
 
 from turborel._aio.runner import run
 from turborel._codec import requests
-from turborel._codec.failures import Notice
-from turborel._codec.frames import HEADER_BYTES, decode_header
-from turborel._codec.replies import Error as ErrorReply
-from turborel._codec.replies import Pong, Status, decode
-from turborel._errors import Error, connection_failure
+from turborel._errors import Error
 from turborel._pipeline import pipelines
 from turborel._session import ops
-from turborel._session.raising import raised
 from turborel._session.state import Session
 from turborel._statements import prepared, queries
 from turborel._transport.timeouts import TERMINATE_WITHIN
@@ -162,19 +157,13 @@ class AsyncClient:
         try:
             await self._stream.write(requests.Terminate().encode())
             self._stream.set_timeout(self._read_timeout or TERMINATE_WITHIN)
-            rest = await self._stream.read_to_end(session.max_body + HEADER_BYTES)
+            while (
+                frame := await self._stream.read_frame_or_end(session.max_body)
+            ) is not None:
+                ops.terminated(session, frame)
         finally:
             self._stream.close()
             session.lose_by("the session was terminated")
-        if len(rest) < HEADER_BYTES:
-            return
-        kind, _ = decode_header(rest[:HEADER_BYTES], session.max_body)
-        reply = decode(kind, rest[HEADER_BYTES:])
-        if isinstance(reply, ErrorReply):
-            raise raised(reply.failure)
-        if not isinstance(reply, Notice | Status | Pong):
-            msg = "the server answered Terminate"
-            raise connection_failure(msg)
 
     def close(self) -> None:
         """Close the connection without ending the session first."""
