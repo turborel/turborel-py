@@ -82,7 +82,7 @@ def test_a_named_pipe_is_opened_and_read() -> None:
         thread.start()
         pipe = open_pipe(name, 5.0)
         thread.join(timeout=10)
-        assert pipe.read(4) == (5).to_bytes(4, "big")
+        # On Windows a pipe connection sends a message as it is, unprefixed.
         assert pipe.read(5) == b"ready"
         pipe.close()
         for server in accepted:
