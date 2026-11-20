@@ -8,7 +8,10 @@ the SQLSTATE rather than by the exception's class alone (RULES.md D9).
 
 from __future__ import annotations
 
-from typing import Final
+from typing import TYPE_CHECKING, Final
+
+if TYPE_CHECKING:
+    from turborel._codec.failures import Diagnostics, Failure
 
 # SQLCODE -919 and SQLSTATE 08006, a connection failure: what the server
 # and turborel-client give a frame that cannot be read [PROTOCOL Frames].
@@ -39,20 +42,54 @@ API_SQLSTATE: Final = "TB910"
 
 
 class _Condition(Exception):  # noqa: N818  # PEP 249 names the subclasses.
-    """A condition the driver raises: its SQLCODE, SQLSTATE and message."""
+    """A condition the driver raises: its SQLCODE, SQLSTATE and message.
 
-    def __init__(self, message: str, *, sqlcode: int, sqlstate: str) -> None:
+    One the server sent carries the rest of its failure too: the rule it
+    cites, its position, whether a transaction is still active, and its
+    diagnostics.
+    """
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        sqlcode: int,
+        sqlstate: str,
+        failure: Failure | None = None,
+    ) -> None:
         """Make a condition.
 
         Args:
             message: What went wrong, in plain words.
             sqlcode: The condition's SQLCODE.
             sqlstate: The condition's SQLSTATE, five characters.
+            failure: The failure the server sent, if it sent one.
         """
         super().__init__(message)
         self.message: Final = message
         self.sqlcode: Final = sqlcode
         self.sqlstate: Final = sqlstate
+        self.failure: Final = failure
+
+    @property
+    def rule(self) -> str | None:
+        """The rule of a standard the failure cites, if it cites one."""
+        return None if self.failure is None else self.failure.rule
+
+    @property
+    def position(self) -> int | None:
+        """Where in the statement the failure is, in characters, if known."""
+        return None if self.failure is None else self.failure.position
+
+    @property
+    def transaction_active(self) -> bool | None:
+        """Whether the session's transaction is active after it, if the server said."""
+        return None if self.failure is None else self.failure.active
+
+    @property
+    def diagnostics(self) -> Diagnostics | None:
+        """What the failure says beyond its message, with `diagnostics` granted."""
+        return None if self.failure is None else self.failure.diagnostics
 
 
 # PEP 249 names this class `Warning`, which the builtin it stands for in

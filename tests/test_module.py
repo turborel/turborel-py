@@ -10,6 +10,7 @@ import pytest
 
 import turborel
 from turborel import _errors
+from turborel._codec.failures import Diagnostics, Failure
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -90,3 +91,25 @@ def test_the_driver_raises_turborels_conditions(
     raised = make()
     assert isinstance(raised, exception)
     assert (raised.sqlcode, raised.sqlstate, raised.message) == (sqlcode, sqlstate, "x")
+
+
+def test_an_error_of_the_server_carries_its_whole_failure() -> None:
+    """Verifies: [DESIGN] D9 the rule, position, active flag and diagnostics too."""
+    diagnostics = Diagnostics(severity="ERROR", table="STAFF")
+    failure = Failure(-103, "2A000", "m", "X3.135-1986 §5.7 SR3b", 7, True, diagnostics)  # noqa: FBT003
+    raised = turborel.ProgrammingError(
+        "m", sqlcode=-103, sqlstate="2A000", failure=failure
+    )
+    assert (raised.rule, raised.position, raised.transaction_active) == (
+        "X3.135-1986 §5.7 SR3b",
+        7,
+        True,
+    )
+    assert raised.diagnostics == diagnostics
+    alone = turborel.OperationalError("m", sqlcode=-919, sqlstate="08006")
+    assert (
+        alone.rule,
+        alone.position,
+        alone.transaction_active,
+        alone.diagnostics,
+    ) == (None, None, None, None)

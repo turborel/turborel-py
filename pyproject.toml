@@ -76,6 +76,12 @@ ignore = [
     "D213",
     # LICENSE covers every file, and no file repeats it, as in turborel.
     "CPY001",
+    # The driver's errors are made by constructors that take their message,
+    # as `io_failed("send", e)` or `session.lose_by("...")`: naming each
+    # literal first, as these ask, adds nothing to the traceback.
+    "EM101",
+    "EM102",
+    "TRY003",
 ]
 
 [tool.ruff.lint.per-file-ignores]
@@ -107,12 +113,13 @@ docstring-code-format = true
 files = ["src", "tests", "tools"]
 mypy_path = "src"
 strict = true
+# `explicit-override` is left off: `typing.override` came in 3.12, and the
+# driver supports 3.11 on the standard library alone (RULES.md D3).
 warn_unreachable = true
 strict_bytes = true
 local_partial_types = true
 enable_error_code = [
     "deprecated",
-    "explicit-override",
     "ignore-without-code",
     "mutable-override",
     "possibly-undefined",
