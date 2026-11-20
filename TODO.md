@@ -31,13 +31,7 @@ Nothing is open: every row M3 names is done.
 
 ## M4 Large objects and bulk
 
-- Large objects: P-VAL-102, P-VAL-103, the P-LOB rows, and the C-LOB
-  rows.
-- Copy: P-CAP-14, P-COPYIN-2, the P-COPYEND rows, P-CONV-4, P-CONV-5,
-  and the C-COPY rows; P-PING-1, a Ping during a copy too.
-- Import and export: the C-IMPORT rows.
-- The manual: the chapters Large Objects and Copying, Importing and
-  Exporting; the pages of large objects and copy.
+Nothing is open: every row M4 names is done.
 
 ## M5 Settings
 

@@ -65,6 +65,8 @@ SQLCODE -919 and SQLSTATE 08006, ends the connection too.
 | 22008 | -301 | `DataError` | a datetime its fields cannot hold |
 | 2200M | -301 | `DataError` | an XML value's nodes asked for, its text not well-formed |
 | 0A000 | -900 | `NotSupportedError` | a value past the protocol's limits |
-| TB910 | -910 | `InterfaceError` | an interface used wrongly |
+| 22000 | -301 | `DataError` | a large object held whole freed or held as if by a locator |
+| 22000 | -301 | `ImportFailure` | an import whose input cannot be read |
+| TB910 | -910 | `InterfaceError` | an interface used wrongly; a request while a copy is under way |
 
 [Errors](../client/30-errors.md) gives each at length.
