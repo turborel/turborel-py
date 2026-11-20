@@ -20,7 +20,7 @@ from tests.kit import (
 
 from turborel import OperationalError, ProgrammingError
 from turborel._codec.requests import HELLO
-from turborel._session.ops import Rowset
+from turborel._statements.queries import Rowset
 from turborel.client import Connection, Mechanism, Offer, Trust
 
 if TYPE_CHECKING:
@@ -226,3 +226,26 @@ def test_a_query_answered_out_of_turn_loses_the_connection(
         with pytest.raises(OperationalError):
             conn.query("VALUES 1")
         assert conn.is_lost
+
+
+def test_a_statement_s_replies_in_their_order() -> None:
+    """Verifies: [PROTOCOL Conversations] Rows, Notices, Statuses, Complete.
+
+    Each Notice and Status taken as it comes, the statement's last reply
+    its outcome.
+    """
+    with Peer() as peer:
+        peer.reply(ready())
+        conn = Connection.open(peer.client, "ANN", Trust())
+        peer.reply(
+            description("A"),
+            rows((True,)),
+            notice("01004", "truncated"),
+            status("SESSION.TIME_ZONE", "+01:00"),
+            complete("01004"),
+        )
+        outcome = conn.query("SELECT A FROM T")
+        assert isinstance(outcome, Rowset)
+        assert outcome.rows == [(True,)]
+        assert [n.sqlstate for n in conn.take_notices()] == ["01004"]
+        assert conn.setting("SESSION.TIME_ZONE") == "+01:00"

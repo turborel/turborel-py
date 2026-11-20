@@ -19,13 +19,10 @@ from turborel._codec.failures import Notice
 from turborel._codec.replies import (
     Challenge,
     Complete,
-    Description,
     Error,
     Pong,
     Ready,
-    Rows,
     Status,
-    Suspended,
     decode,
 )
 from turborel._errors import OperationalError
@@ -33,7 +30,6 @@ from turborel._session.capabilities import CHANGE_USER, PING, RESET
 
 if TYPE_CHECKING:
     from turborel._auth.mechanisms import Mechanism
-    from turborel._codec.composites import Column
     from turborel._codec.replies import Reply
     from turborel._session.capabilities import Offer
     from turborel._session.state import Session
@@ -128,58 +124,6 @@ def ping(session: Session) -> Steps[None]:
         raise session.failed(reply.failure)
     if not isinstance(reply, Pong):
         raise session.lose_by("the server sent no Pong")
-
-
-@dataclass(frozen=True, slots=True)
-class Rowset:
-    """A query's outcome: its columns and its rows [CLIENT Running statements]."""
-
-    columns: tuple[Column, ...]
-    rows: list[tuple[object, ...]]
-
-
-Outcome = Rowset | Complete
-"""A statement's outcome: a query's rows, or another statement's completion."""
-
-
-def query(session: Session, sql: str) -> Steps[Outcome]:
-    """A direct statement, its rows read whole [PROTOCOL Query 'Q'].
-
-    Under autocommit the statement is its own transaction, ended with it
-    by `ends` [CLIENT Running statements].
-    """
-    attributes = session.told.query_attributes()
-    sent = requests.Query(sql, ends=session.autocommit, attributes=attributes)
-    yield Send(sent.encode())
-    return (yield from query_reply(session))
-
-
-def query_reply(session: Session) -> Steps[Outcome]:
-    """A Query's replies: a Complete, or a Description, its Rows and a Complete."""
-    reply = yield from receive(session)
-    if isinstance(reply, Complete):
-        return reply
-    if isinstance(reply, Error):
-        raise session.failed(reply.failure)
-    if not isinstance(reply, Description):
-        raise session.lose_by("the server sent no result")
-    found, _ = yield from rows(session)
-    return Rowset(reply.columns, found)
-
-
-def rows(session: Session) -> Steps[tuple[list[tuple[object, ...]], bool]]:
-    """Rows until a Complete, or Suspended: the rows, and whether more are left."""
-    found: list[tuple[object, ...]] = []
-    while True:
-        reply = yield from receive(session)
-        if isinstance(reply, Rows):
-            found.extend(reply.rows)
-        elif isinstance(reply, Complete | Suspended):
-            return found, isinstance(reply, Suspended)
-        elif isinstance(reply, Error):
-            raise session.failed(reply.failure)
-        else:
-            raise session.lose_by("the server broke off its rows")
 
 
 def reset(session: Session) -> Steps[None]:

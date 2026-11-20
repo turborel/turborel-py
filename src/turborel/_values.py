@@ -11,7 +11,11 @@ Each is frozen, so it compares and hashes by its value.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Final
+from xml.etree import ElementTree as ET
+from xml.parsers import expat
+
+from turborel._errors import data_error
 
 if TYPE_CHECKING:
     from decimal import Decimal
@@ -77,9 +81,38 @@ class Json:
 
 @dataclass(frozen=True, slots=True)
 class Xml:
-    """An XML value: its serialization as CONTENT."""
+    """An XML value: its serialization as CONTENT [CLIENT XML values]."""
 
     text: str
+
+    def nodes(self) -> list[str | ET.Element]:
+        """Its nodes, parsed from its text as CONTENT: text and elements, in order.
+
+        A document type declaration, and so any entity it declares, is
+        refused, so a value cannot make the parse take memory without
+        bound; Python's expat parses the rest.
+
+        Raises:
+            DataError: SQLSTATE 2200M, if it is not well-formed CONTENT.
+        """
+        builder = ET.TreeBuilder()
+        parser = expat.ParserCreate()
+        parser.StartDoctypeDeclHandler = _no_doctype
+        parser.StartElementHandler = builder.start
+        parser.EndElementHandler = builder.end
+        parser.CharacterDataHandler = builder.data
+        try:
+            parser.Parse(f"<{_WRAPPER}>{self.text}</{_WRAPPER}>", True)  # noqa: FBT003
+        except (expat.ExpatError, ValueError) as e:
+            msg = f"an XML value is not well-formed CONTENT: {e}"
+            raise data_error(msg, NOT_WELL_FORMED_XML) from e
+        wrapper = builder.close()
+        found: list[str | ET.Element] = [wrapper.text] if wrapper.text else []
+        for element in wrapper:
+            found.append(element)
+            if element.tail:
+                found.append(element.tail)
+        return found
 
 
 @dataclass(frozen=True, slots=True)
@@ -115,3 +148,15 @@ class LobLocator:
     locator: int
     octets: int
     characters: int
+
+
+_WRAPPER: Final = "turborel-content"
+"""The element CONTENT is parsed within, as a fragment needs one root."""
+
+NOT_WELL_FORMED_XML: Final = "2200M"
+"""SQLSTATE 2200M: invalid XML document, here a value not well-formed."""
+
+
+def _no_doctype(*_: object) -> None:
+    msg = "an XML value holds a document type declaration"
+    raise ValueError(msg)

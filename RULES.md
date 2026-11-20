@@ -75,7 +75,9 @@ Each is told in full in [§7](#7-the-decisions).
 | `src/turborel/_tls/` | the `tls` layer: TLS contexts and the channel SCRAM binds |
 | `src/turborel/_transport/` | the `transport` layer: TCP, Unix sockets, named pipes, timeouts |
 | `src/turborel/_session/` | the `session` layer: each request as steps without I/O, the session's state, and the blocking runner |
-| `src/turborel/client.py` | the low-level client, public: connections, mechanisms, TLS, timeouts (D2) |
+| `src/turborel/_statements/` | the `statements` layer, as steps without I/O: queries, several statements at once, prepared statements and their cursors |
+| `src/turborel/_client/` | the low-level client's parts: a connection's core, its statements, cancelling, connecting |
+| `src/turborel/client.py` | the low-level client, public: connections, statements, mechanisms, TLS, timeouts (D2) |
 | `src/turborel/py.typed` | says the package is typed (PEP 561) |
 | `tests/` | the tests, a folder for each layer, as `tests/codec/` for `_codec`; `tests/kit.py` the frames and peer they share |
 | `tests/server/` | the live tests and their server's set-up (D14) |
@@ -297,7 +299,7 @@ the other. Each layer is a commit area of CONTRIBUTING.md.
 In turborel-py each layer is a private package of `turborel`, named for
 its commit area: `turborel._codec`, `turborel._transport` and so on. A
 request is a generator of the frames it sends and the replies it waits
-for (`_session/ops.py`), so one implementation serves the blocking
+for (`_session/ops.py`, `_statements/`), so one implementation serves the blocking
 connection and the asyncio one; `turborel.client` is the low-level
 client's public interface. TLS,
 the hashes SCRAM needs and zlib come from the standard library's `ssl`,

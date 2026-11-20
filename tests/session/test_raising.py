@@ -15,7 +15,7 @@ from turborel import (
     OperationalError,
     ProgrammingError,
 )
-from turborel._codec.failures import Failure
+from turborel._codec.failures import REPLICA_BEHIND, RESET_ROLLED_BACK, Failure
 from turborel._session.capabilities import COMPRESSION, Offer
 from turborel._session.raising import ends_connection, raised
 
@@ -83,3 +83,15 @@ def test_an_offer_asks_for_compression_and_attributes() -> None:
     assert compressed.capabilities.count(COMPRESSION) == 1
     assert offer.attribute("application", "x").attributes == (("application", "x"),)
     assert Offer.none().capabilities == ()
+
+
+def test_a_replica_behind_is_an_operational_error() -> None:
+    """Verifies: [PROTOCOL Errors and notices] TBR01, SQLCODE -920, a replica behind.
+
+    The server's own SQLSTATEs: TBR01 of a replica that had not applied
+    REPLICATION.READ_AFTER's position in time, an `OperationalError`;
+    01T01, of a Reset that rolled back, a Notice.
+    """
+    error = raised(failure(REPLICA_BEHIND, -920))
+    assert (type(error), error.sqlcode) == (OperationalError, -920)
+    assert RESET_ROLLED_BACK == "01T01"
