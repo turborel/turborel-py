@@ -6,8 +6,8 @@ A program connects to a Turborel server, `turboreld`, over TCP, a Unix
 socket, or on Windows a named pipe; or over TLS on the server's TCP port.
 It names the user it connects as, and a mechanism that proves it. This
 chapter connects with the low-level client, the module `turborel.client`;
-the standard API's way of connecting, `turborel.connect`, comes at
-milestone M7.
+the standard API connects by settings, with `turborel.connect`
+([The turborel Module](../client/01-api-module.md)).
 
 ## A first connection
 

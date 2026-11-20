@@ -11,10 +11,9 @@ own manuals,
 [The Turborel Documentation Set](https://github.com/turborel/turborel/blob/main/doc/README.md).
 
 turborel-py is in alpha: what these manuals describe may change in any
-release until 1.0.0 ([Versions](appendix/d-versions.md)). The driver is
-built in milestones, and until a chapter's milestone lands, the chapter
-says what it will cover. Each change updates the pages it touches, so
-the manuals describe the release they come with.
+release until 1.0.0 ([Versions](appendix/d-versions.md)). Each change
+updates the pages it touches, so the manuals describe the release they
+come with.
 
 ## The volumes
 

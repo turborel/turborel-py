@@ -84,7 +84,7 @@ True
 A large object longer than the server's SERVER.LOB_INLINE_BYTES comes
 by its locator, which lasts only as long as its transaction; so a result
 that sent a locator keeps its transaction active, under autocommit too,
-until the program ends it. Large objects are the matter of milestone M4.
+until the program ends it ([Large Objects](06-large-objects.md)).
 
 ## Reset and change of user
 

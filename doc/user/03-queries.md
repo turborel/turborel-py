@@ -5,7 +5,8 @@
 A connection runs one statement at a time: a query, which gives columns
 and rows, or any other statement, which gives its completion. This
 chapter runs statements with the low-level client, `turborel.client`;
-the standard API's cursors come at milestone M7.
+the standard API runs them by its cursors
+([Cursor](../client/03-api-cursor.md)).
 
 ## A statement and its outcome
 
@@ -109,7 +110,7 @@ print(conn.warning, [c.message for c in conn.conditions])
 
 ```text
 2 ('3', '4')
-1686
+2083
 01004 ['the statement completed with warning: string data, right truncation']
 ```
 

@@ -858,9 +858,9 @@ later decision of RULES.md.
 
 | ID | Row | Citation | Status |
 |---|---|---|---|
-| S-API-1 | `connect`, and the module globals `apilevel`, `threadsafety` and `paramstyle` (`qmark`) | `[DESIGN] D2` | not yet |
-| S-API-2 | The Connection object: `close`, `commit`, `rollback`, `cursor`, and the driver's extensions | `[DESIGN] D2` | not yet |
-| S-API-3 | The Cursor object: `description`, `rowcount`, `execute`, `executemany`, the fetch methods, `arraysize` | `[DESIGN] D2` | not yet |
-| S-API-4 | Type objects and constructors: `Date`, `Time`, `Timestamp`, `Binary` and the others, `STRING`, `BINARY`, `NUMBER`, `DATETIME`, `ROWID` | `[DESIGN] D2` | not yet |
-| S-API-5 | PEP 249's exceptions, each carrying SQLCODE, SQLSTATE and message | `[DESIGN] D9` | not yet |
-| S-API-6 | `turborel.aio`, the asyncio interface, with the same objects | `[DESIGN] D2` | not yet |
+| S-API-1 | `connect`, and the module globals `apilevel`, `threadsafety` and `paramstyle` (`qmark`) | `[DESIGN] D2` | done |
+| S-API-2 | The Connection object: `close`, `commit`, `rollback`, `cursor`, and the driver's extensions | `[DESIGN] D2` | done |
+| S-API-3 | The Cursor object: `description`, `rowcount`, `execute`, `executemany`, the fetch methods, `arraysize` | `[DESIGN] D2` | done |
+| S-API-4 | Type objects and constructors: `Date`, `Time`, `Timestamp`, `Binary` and the others, `STRING`, `BINARY`, `NUMBER`, `DATETIME`, `ROWID` | `[DESIGN] D2` | done |
+| S-API-5 | PEP 249's exceptions, each carrying SQLCODE, SQLSTATE and message | `[DESIGN] D9` | done |
+| S-API-6 | `turborel.aio`, the asyncio interface, with the same objects | `[DESIGN] D2` | done |
