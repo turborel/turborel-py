@@ -107,5 +107,6 @@ time zone, with their precision; INTERVAL with its qualifier; BOOLEAN;
 DECFLOAT; arrays, rows and multisets of their element and field types;
 CLOB and BLOB with their length; structured and reference types by
 their names; JSON; XML with its modifiers; and UUID. A distinct type is
-described as its source type. How a program reads a column's type is
-told with the statements, at milestone M3.
+described as its source type. A program reads a column's type as its
+`data_type`, and a parameter's as its own
+([Statements and Cursors](../client/22-statements.md)).

@@ -53,4 +53,4 @@ past Python's years 1 to 9999.
 
 [Appendix A: Types](../appendix/a-types.md), the bounds of each value;
 [Statements and Cursors](22-statements.md), where values are read and
-sent, at milestone M3.
+sent.

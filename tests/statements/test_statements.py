@@ -9,6 +9,7 @@ from tests.kit import (
     description,
     error,
     frame,
+    notice,
     ready,
     rows,
     text,
@@ -253,3 +254,80 @@ def test_what_the_completion_told() -> None:
 def struct_failure() -> bytes:
     """A condition's body: a warning of 01004."""
     return u32(0) + text("01004") + text("truncated") + b"\x00\x00\x00"
+
+
+def test_a_failure_tells_whether_the_transaction_lasts() -> None:
+    """Verifies: [PROTOCOL Query 'Q'] under `ends`, a failing commit's Error.
+
+    In place of the Complete, saying no transaction is active; [CLIENT
+    What the server tells] under autocommit a failing fetch rolls back.
+    """
+    with Peer() as peer:
+        conn = opened(peer, *ALL)
+        conn.autocommit = True
+        peer.reply(error(-530, "40002", "the commit failed"))
+        with pytest.raises(Exception, match="the commit failed") as failed:
+            conn.query("INSERT INTO T VALUES (TRUE)")
+        assert getattr(failed.value, "transaction_active", None) is False
+        assert not conn.in_transaction
+        assert peer.received()[1].endswith(b"\x01")
+        peer.reply(prepared(0, 1))
+        statement = conn.prepare("SELECT A FROM T")
+        peer.reply(rows((True,)), frame("S"))
+        conn.open_cursor(statement, rows=1)
+        peer.reply(error(-301, "22012", "a divisor shall not be 0"))
+        with pytest.raises(Exception, match="divisor"):
+            conn.fetch(statement)
+        assert not conn.in_transaction
+
+
+def test_a_prepare_over_an_open_cursor_fails() -> None:
+    """Verifies: [PROTOCOL Prepare 'P'] a statement whose cursor is open (24000).
+
+    Not replaced; the Error raised, the connection kept.
+    """
+    with Peer() as peer:
+        conn = opened(peer)
+        peer.reply(error(-501, "24000", "the cursor is open"))
+        with pytest.raises(InternalError):
+            conn.prepare("VALUES 1")
+        assert not conn.is_lost
+
+
+def test_a_failing_statement_s_conditions_come_as_notices() -> None:
+    """Verifies: [PROTOCOL Errors and notices] a failing statement's conditions.
+
+    As Notices before its Error, kept for the program [PROTOCOL Notice
+    'N'].
+    """
+    with Peer() as peer:
+        conn = opened(peer, "notices", "conditions")
+        peer.reply(notice("01004", "truncated"), error(-301, "22012", "divisor"))
+        with pytest.raises(Exception, match="divisor"):
+            conn.query("VALUES 1")
+        assert [n.sqlstate for n in conn.take_notices()] == ["01004"]
+
+
+def test_a_reply_out_of_turn_loses_the_connection() -> None:
+    """Verifies: [PROTOCOL Prepare 'P'] answered by Prepared or Error, or lost.
+
+    [PROTOCOL Close 'C'] answered by Complete or Error; any other reply
+    fails the connection (08006) [PROTOCOL Errors and notices].
+    """
+    with Peer() as peer:
+        conn = opened(peer)
+        peer.reply(prepared(0, 1))
+        statement = conn.prepare("SELECT A FROM T")
+        peer.reply(error(-501, "24000", "not open"))
+        with pytest.raises(InternalError):
+            conn.close_cursor(statement)
+        peer.reply(rows())
+        with pytest.raises(OperationalError):
+            conn.close_cursor(statement)
+        assert conn.is_lost
+    with Peer() as peer:
+        conn = opened(peer)
+        peer.reply(complete())
+        with pytest.raises(OperationalError):
+            conn.prepare("VALUES 1")
+        assert conn.is_lost

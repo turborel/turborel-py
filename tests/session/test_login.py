@@ -16,6 +16,7 @@ from tests.kit import (
     rows,
     status,
     text,
+    u32,
 )
 
 from turborel import OperationalError, ProgrammingError
@@ -249,3 +250,19 @@ def test_a_statement_s_replies_in_their_order() -> None:
         assert outcome.rows == [(True,)]
         assert [n.sqlstate for n in conn.take_notices()] == ["01004"]
         assert conn.setting("SESSION.TIME_ZONE") == "+01:00"
+
+
+def test_requests_wait_for_ready() -> None:
+    """Verifies: [PROTOCOL Requests] only Hello and Answer before Ready.
+
+    A connection is made only once Ready is read, so every other request
+    follows it [PROTOCOL Opening a connection].
+    """
+    with Peer() as peer:
+        peer.reply(
+            frame("C", u32(3) + b"abc"), ready(capabilities=("ping",)), frame("G")
+        )
+        conn = Connection.open(peer.client, "ANN", Answering())
+        conn.ping()
+        kinds = [peer.received()[0] for _ in range(3)]
+        assert kinds == [ord("H"), ord("A"), ord("G")]

@@ -5,11 +5,12 @@ from __future__ import annotations
 import tomllib
 from pathlib import Path
 from typing import TYPE_CHECKING
+from xml.etree import ElementTree as ET
 
 import pytest
 
 import turborel
-from turborel import _errors
+from turborel import DataError, Xml, _errors
 from turborel._codec.failures import Diagnostics, Failure
 
 if TYPE_CHECKING:
@@ -113,3 +114,26 @@ def test_an_error_of_the_server_carries_its_whole_failure() -> None:
         alone.transaction_active,
         alone.diagnostics,
     ) == (None, None, None, None)
+
+
+def test_an_xml_value_s_nodes() -> None:
+    """Verifies: [CLIENT XML values] its nodes parsed from it, as CONTENT.
+
+    Text and elements in order; a document type declaration, and so any
+    entity, refused, as is text not well-formed (SQLSTATE 2200M).
+    """
+    value = Xml('jam <order no="18"><item>pot</item></order> &amp; <e/>')
+    text, order, tail, empty = value.nodes()
+    assert (text, tail) == ("jam ", " & ")
+    assert isinstance(order, ET.Element)
+    assert (order.tag, order.get("no"), order.findtext("item")) == (
+        "order",
+        "18",
+        "pot",
+    )
+    assert isinstance(empty, ET.Element)
+    assert Xml("").nodes() == []
+    for wrong in ('<!DOCTYPE a [<!ENTITY b "c">]><a>&b;</a>', "<a>", "&undefined;"):
+        with pytest.raises(DataError) as failure:
+            Xml(wrong).nodes()
+        assert failure.value.sqlstate == "2200M"

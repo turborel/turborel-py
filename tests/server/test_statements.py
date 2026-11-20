@@ -392,3 +392,131 @@ def test_a_result_sent_by_locator_keeps_its_transaction(conn: Connection) -> Non
     assert isinstance(body, LobLocator)
     assert (body.binary, body.characters, conn.in_transaction) == (False, 70_000, True)
     conn.query("COMMIT")
+
+
+def test_reset_in_a_transaction(conn: Connection) -> None:
+    """Verifies: [PROTOCOL Reset 'W'] the transaction rolled back, the session renewed.
+
+    Prepared statements, temporary tables and settings gone, the
+    authentication kept; its replies a Notice of 01T01 of severity NOTICE
+    [PROTOCOL Errors and notices], told as a Notice though `conditions`
+    is granted; then each setting's Status; then no transaction active
+    [PROTOCOL Conversations] [CLIENT Controlling the session].
+    """
+    conn.query("CREATE LOCAL TEMPORARY TABLE SCRATCH (N INTEGER)")
+    conn.query("SET TIME ZONE INTERVAL '+02:00' HOUR TO MINUTE")
+    statement = conn.prepare("VALUES 1")
+    conn.reset()
+    [rolled_back] = conn.take_notices()
+    assert (rolled_back.sqlstate, rolled_back.diagnostics.severity) == (
+        "01T01",
+        "NOTICE",
+    )
+    assert (conn.in_transaction, conn.authorization) == (False, "ANN")
+    assert conn.setting("SESSION.TIME_ZONE") == "+00:00"
+    with pytest.raises(ProgrammingError):
+        conn.query("SELECT N FROM SCRATCH")
+    with pytest.raises(ProgrammingError) as gone:
+        conn.execute(statement)
+    assert gone.value.sqlstate == "26000"
+    conn.query("ROLLBACK")
+    conn.reset()
+    assert conn.take_notices() == []
+
+
+def test_change_user_renews_the_session(live: Live) -> None:
+    """Verifies: [PROTOCOL ChangeUser 'U'] the user proved again, the session renewed.
+
+    The same Challenge and Answer steps as Hello's; accepted, as by Reset
+    under a new cancel key, the transaction rolled back told by 01T01
+    [CLIENT Controlling the session].
+    """
+    conn = connect_local(live.socket, "ANN", Trust())
+    before = conn.canceller()
+    assert before is not None
+    conn.query("CREATE TABLE CHANGED (N INTEGER)")
+    conn.change_user("ANN", Scram(live.password))
+    assert [n.sqlstate for n in conn.take_notices()] == ["01T01"]
+    assert conn.authorization == "ANN"
+    after = conn.canceller()
+    assert after is not None
+    assert after._key != before._key  # noqa: SLF001  # The key, never shown.
+    conn.ping()
+    conn.terminate()
+
+
+def test_what_each_capability_gives(live: Live) -> None:
+    """Verifies: [PROTOCOL Capabilities] each, granted or not.
+
+    Not granted: no diagnostics, row count, identity values, time, commit
+    position or conditions told; ping, reset, change user, describe,
+    numbered cursors, several statements and query attributes refused
+    before anything is sent, the connection kept; a statement's warning
+    still its Complete's SQLSTATE; with `notices` alone, conditions as
+    Notices [PROTOCOL Errors and notices].
+    """
+    bare = connect_to(
+        Tcp(live.host, live.port), "ANN", Trust(), offer=Offer(capabilities=())
+    )
+    with pytest.raises(ProgrammingError) as undiagnosed:
+        bare.query("SELECT * FROM NOPE")
+    assert undiagnosed.value.diagnostics is None
+    bare.query("CREATE TABLE BARE (ID INTEGER GENERATED ALWAYS AS IDENTITY, N INTEGER)")
+    bare.query("INSERT INTO BARE (N) VALUES (1)")
+    bare.query("COMMIT")
+    told = (
+        bare.rows_affected,
+        bare.last_generated,
+        bare.server_time,
+        bare.commit_position,
+    )
+    assert told == (None, (), None, None)
+    bare.query("VALUES CAST('abc' AS CHAR(2))")
+    assert (bare.warning, bare.conditions, bare.take_notices()) == ("01004", (), [])
+    statement = bare.prepare("VALUES 1")
+    for refused in (
+        bare.ping,
+        bare.reset,
+        lambda: bare.change_user("ANN", Scram(live.password)),
+        lambda: bare.describe(statement),
+        lambda: bare.open_cursor(statement, cursor=1),
+        lambda: bare.query_many("VALUES 1; VALUES 2"),
+        lambda: bare.set_query_attributes([("k", "v")]),
+    ):
+        with pytest.raises(OperationalError) as failure:
+            refused()
+        assert failure.value.sqlstate == "08006"
+    assert rows_of(bare.query("VALUES 1")) == [(1,)]
+    bare.terminate()
+    noticed = connect_to(
+        Tcp(live.host, live.port),
+        "ANN",
+        Trust(),
+        offer=Offer(capabilities=("notices",)),
+    )
+    noticed.query("VALUES CAST('abc' AS CHAR(2))")
+    assert ([n.sqlstate for n in noticed.take_notices()], noticed.conditions) == (
+        ["01004"],
+        (),
+    )
+    noticed.terminate()
+
+
+def test_cursors_closed_and_statements_deallocated(conn: Connection) -> None:
+    """Verifies: [PROTOCOL Close 'C'] a cursor not open, an Error.
+
+    [PROTOCOL Deallocate 'D'] a statement whose cursor is open fails
+    (24000); [PROTOCOL Query 'Q'] a text of no statement, one Complete.
+    """
+    statement = conn.prepare("VALUES 1, 2")
+    with pytest.raises(InternalError) as not_open:
+        conn.close_cursor(statement)
+    assert not_open.value.sqlstate == "24000"
+    conn.open_cursor(statement, rows=1)
+    with pytest.raises(InternalError) as still_open:
+        conn.deallocate(statement)
+    assert still_open.value.sqlstate == "24000"
+    conn.close_cursor(statement)
+    conn.deallocate(statement)
+    ran = conn.query_many("")
+    assert (len(ran.outcomes), ran.failure) == (1, None)

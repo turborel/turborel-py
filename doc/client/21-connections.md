@@ -89,7 +89,7 @@ the server shows in INFORMATION_SCHEMA.CONNECTION_ATTRIBUTES.
 | `ping()` | whether the server and the connection are alive |
 | `reset()` | the session as it was at login, its user kept |
 | `change_user(user, mechanism)` | the connection authenticated again as `user` |
-| `query(sql)` | one statement: a `Rowset` of a query's columns and rows, or a completion |
+| `query(sql)` and the rest | statements, prepared statements and cursors ([Statements and Cursors](22-statements.md)) |
 | `terminate()` | the session ended, waiting for the close at most the read timeout, else 60 seconds |
 | `close()` | the connection closed, the session not ended first |
 | `is_lost` | whether it is lost, every call then giving its failure |
