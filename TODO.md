@@ -60,7 +60,9 @@ Nothing is open: every row M1 names is done.
 
 - Settings, the URI and the files, read as turborel-client's settings
   tests read them (R-TEST-9): the C-SET, C-OPT, C-URI, C-SVC and C-PASS
-  rows.
+  rows; with the cases `client/src/settings/tests.rs` holds at
+  1c4187e4, client certificates named by settings and malformed hosts
+  and targets shown among them.
 - Several servers and roles: the C-HOSTS rows.
 - TLS modes and channel binding: the C-TLS rows.
 - The key cache shared by settings: C-KEY-2.
