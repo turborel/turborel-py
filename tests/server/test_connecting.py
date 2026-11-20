@@ -446,8 +446,8 @@ def test_the_statuses_in_their_order(live: Live) -> None:
     """Verifies: [PROTOCOL Status 'T'] at login, one of each name in the page's order.
 
     Then the session's own settings; after a statement only what it
-    changed, none of one that changed nothing; CATALOG, the database's
-    catalog's name.
+    changed, none of one that changed nothing, the first after login too;
+    CATALOG, the database's catalog's name.
     """
     conn = connect_local(live.socket, "ANN", Trust())
     names = list(conn.settings())
@@ -458,7 +458,19 @@ def test_the_statuses_in_their_order(live: Live) -> None:
     assert conn.setting("CATALOG") == "TURBOREL"
     assert (conn.setting("OWNER"), conn.setting("SERVER_READ_ONLY")) == ("YES", "NO")
     before = dict(conn.settings())
+    stream = conn._stream  # noqa: SLF001  # Its frames, counted here alone.
+    kinds: list[int] = []
+    reading = stream.read_frame
+
+    def counted(max_body: int) -> tuple[int, bytes]:
+        frame = reading(max_body)
+        kinds.append(frame[0])
+        return frame
+
+    stream.read_frame = counted  # type: ignore[method-assign]  # Counted for the test.
     conn.query("VALUES 1")
+    stream.read_frame = reading  # type: ignore[method-assign]
+    assert ord("T") not in kinds
     assert dict(conn.settings()) == before
     conn.query("SET TIME ZONE INTERVAL '+04:00' HOUR TO MINUTE")
     changed = {k: v for k, v in conn.settings().items() if before.get(k) != v}
