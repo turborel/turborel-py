@@ -1,6 +1,6 @@
 # Builds the package and checks it, run only by hand (VERSIONING.md,
 # Publishing). It publishes nothing: the publish job is written, and
-# disabled until the owner enables it, once every turborel driver is done.
+# disabled until a maintainer enables it, once every turborel driver is done.
 name: release
 
 on:
@@ -43,7 +43,7 @@ jobs:
           if-no-files-found: error
 
   publish:
-    # Disabled: the owner enables it, by removing this condition, once
+    # Disabled: a maintainer enables it, by removing this condition, once
     # every turborel driver is done and PyPI's trusted publisher for this
     # workflow and the environment `pypi` is set up.
     if: false
