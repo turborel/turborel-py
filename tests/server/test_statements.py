@@ -547,3 +547,36 @@ def test_a_call_s_output_parameters(conn: Connection) -> None:
     assert (len(bump.parameters), [c.name for c in bump.columns]) == (1, ["N", "SEEN"])
     assert rows_of(conn.execute(bump, (5,))) == [(7, "X")]
     conn.query("ROLLBACK")
+
+
+def test_a_query_failing_at_its_first_batch_is_answered_by_its_error(
+    conn: Connection,
+) -> None:
+    """Verifies: [PROTOCOL Query 'Q'] a statement failing before its first batch.
+
+    No Description or Rows before it, so no columns are given, its
+    transaction's state still told; an earlier pipelined request's
+    replies still come before it.
+    """
+    conn.query("CREATE TABLE ZERO (N INTEGER)")
+    conn.query("INSERT INTO ZERO VALUES (0)")
+    stream = conn._stream  # noqa: SLF001  # Its frames, counted here alone.
+    kinds: list[int] = []
+    reading = stream.read_frame
+
+    def counted(max_body: int) -> tuple[int, bytes]:
+        frame = reading(max_body)
+        kinds.append(frame[0])
+        return frame
+
+    stream.read_frame = counted  # type: ignore[method-assign]  # Counted for the test.
+    with pytest.raises(DataError) as failure:
+        conn.query("SELECT 1 / N FROM ZERO")
+    stream.read_frame = reading  # type: ignore[method-assign]
+    assert failure.value.sqlstate == "22012"
+    assert kinds == [ord("E")]
+    assert conn.in_transaction
+    answers = conn.pipeline().query("VALUES 1").query("SELECT 1 / N FROM ZERO").run()
+    assert rows_of(answers[0]) == [(1,)]
+    assert isinstance(answers[1], DataError)
+    conn.query("ROLLBACK")

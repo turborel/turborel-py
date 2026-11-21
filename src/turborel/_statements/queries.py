@@ -2,7 +2,8 @@
 
 [PROTOCOL Query 'Q'] [CLIENT Running statements] [CLIENT Controlling the
 session]. A query is answered by a Description, its Rows and a Complete;
-another statement by a Complete; a failure by an Error. Under autocommit
+another statement by a Complete; a failure by an Error, alone where the
+statement fails before its first batch is sent, else after Rows. Under autocommit
 the statement is its own transaction, ended with it by `ends`.
 """
 
