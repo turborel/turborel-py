@@ -52,11 +52,16 @@ connection kept.
 ## The bounds of each
 
 **Exact numbers.** An exact number is its units, from -2^127 to
-2^127 - 1, divided by ten to its scale, from 0 to 4 294 967 295. One of
-scale 0 is an `int`; another a `Decimal` whose exponent is minus its
-scale, so 1.50 keeps its two places. Neither passes through a `float`.
-An `int` or `Decimal` sent past those bounds, or not finite, is refused
-with `turborel.DataError`, SQLSTATE 22003.
+2^127 - 1, divided by ten to its scale, from 0 to 4 294 967 295. Turborel
+holds up to 38 digits. One of scale 0 is an `int`; another a `Decimal`
+whose exponent is minus its scale, so 1.50 keeps its two places. Neither
+passes through a `float`, and neither is rounded: a `Decimal` holds every
+digit it is made with, beyond the 28 of Python's default decimal context,
+which rounds only the arithmetic a program does with it. An `int` or
+`Decimal` sent past the units' and scale's bounds, or not finite, is
+refused with `turborel.DataError`, SQLSTATE 22003, before anything is
+sent; one within them of more than 38 digits is sent, and the server
+refuses it with the same SQLSTATE.
 
 **DECFLOAT.** A DECFLOAT has at most 34 digits and an adjusted exponent
 from -6143 to 6144, with no trailing zero. It is read as a `Decimal`. To

@@ -48,6 +48,24 @@ def test_exact_numbers_keep_units_and_scale(
     assert python_to_exact(value) == (units, scale)
 
 
+def test_38_digits_pass_through_exactly_past_the_default_context() -> None:
+    """Verifies: [PROTOCOL Values] an exact number of 38 digits, no digit lost.
+
+    Past the 28 digits of Python's default decimal context, read and sent
+    with no rounding, as Turborel's exact numbers hold 38; one of 39 whose
+    units fit an `i128` sent too, for the server to refuse.
+    """
+    widest = 10**38 - 1
+    fraction = exact_to_python(widest, 10)
+    assert str(fraction) == "9999999999999999999999999999.9999999999"
+    assert python_to_exact(fraction) == (widest, 10)
+    assert python_to_exact(Decimal("-1234567890123456789012345678.9012345678")) == (
+        -12345678901234567890123456789012345678,
+        10,
+    )
+    assert python_to_exact(10**38) == (10**38, 0)
+
+
 def test_a_decimal_of_positive_exponent_is_scale_0() -> None:
     """Verifies: [PROTOCOL Values] an exact number's scale is a `u32`, at least 0."""
     assert python_to_exact(Decimal("12E+3")) == (12_000, 0)
