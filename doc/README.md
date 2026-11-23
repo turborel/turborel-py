@@ -1,4 +1,4 @@
-# The turborel-py Documentation Set
+# Turborel Python Driver Documentation
 
 turborel-py is the Python driver for Turborel, a relational database
 system. It connects a Python program to a Turborel server,
@@ -8,7 +8,7 @@ low-level client built to do all that Turborel's own client library
 does. This set of manuals describes it for those who write programs with
 it. The SQL a program sends, and the server, are described in Turborel's
 own manuals,
-[The Turborel Documentation Set](https://github.com/turborel/turborel/blob/main/doc/README.md).
+[Turborel Documentation](https://github.com/turborel/turborel/blob/main/doc/README.md).
 
 turborel-py is in alpha: what these manuals describe may change in any
 release until 1.0.0 ([Versions](appendix/d-versions.md)). Each change

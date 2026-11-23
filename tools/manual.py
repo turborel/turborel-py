@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 CONTENTS: Final = "[Contents](README.md)"
 """The line after a page's title, which the site replaces by its sidebar."""
 
-BACK: Final = "[The documentation set](../README.md)"
+BACK: Final = "[Turborel Python Driver Documentation](../README.md)"
 """The line of a volume's README.md that leads back to the set."""
 
 README: Final = "README.md"

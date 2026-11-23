@@ -2,7 +2,7 @@
 
 Tables to look things up in.
 
-[The documentation set](../README.md)
+[Turborel Python Driver Documentation](../README.md)
 
 ## Contents
 
