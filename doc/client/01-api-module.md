@@ -20,6 +20,8 @@ DateFromTicks(ticks) | TimeFromTicks(ticks) | TimestampFromTicks(ticks)
 Binary(data)
 STRING | BINARY | NUMBER | DATETIME | ROWID
 TypeCode(data_type, name, written)
+ParameterMode.IN | ParameterMode.INOUT | ParameterMode.OUT
+ParameterDescription(mode, position, type_code)
 
 Warning, Error, InterfaceError, DatabaseError, DataError, OperationalError,
 IntegrityError, InternalError, ProgrammingError, NotSupportedError
@@ -50,6 +52,11 @@ CHARACTER, CHARACTER VARYING and CLOB; `BINARY` to the binary string
 types, BINARY, BINARY VARYING and BLOB; `NUMBER` to the exact,
 approximate and decimal floating-point types; `DATETIME` to DATE, TIME,
 TIMESTAMP and the intervals; `ROWID` to a reference type.
+
+**Parameter modes.** `ParameterMode` and `ParameterDescription` are
+what a cursor's `parameters` gives after `callproc`: each `?` of the
+CALL with its mode, its parameter's position and its type code
+([Cursor](03-api-cursor.md)).
 
 **Constructors.** `Date`, `Time`, `Timestamp` and `Binary` make a
 `datetime.date`, `time`, `datetime`, and `bytes`; the `FromTicks`

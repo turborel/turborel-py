@@ -23,6 +23,7 @@ from turborel import (
     Structured,
     Xml,
 )
+from turborel._codec.called import Called, CalledParameter, ParameterMode
 from turborel._codec.composites import Column, Declared, Parameter
 from turborel._codec.datatypes import (
     ApproximateType,
@@ -139,6 +140,23 @@ MESSAGES: Final[dict[str, Reply]] = {
     "ready": Ready("ANN", b"\xa5" * 16, ("ping",), "turborel 0.0.0 (alpha)"),
     "prepared": Prepared(1, PARAMETERS, TWO_COLUMNS),
     "prepared-empty": Prepared(2, (), ()),
+    "prepared-called": Prepared(
+        3,
+        (Parameter(varying=False, data_type=INTEGER),),
+        (Column("G", INTEGER, not_null=True),),
+        Called(
+            "S",
+            "P",
+            (
+                CalledParameter(
+                    ParameterMode.IN, 1, Parameter(varying=False, data_type=INTEGER)
+                ),
+                CalledParameter(
+                    ParameterMode.OUT, 2, Parameter(varying=False, data_type=INTEGER)
+                ),
+            ),
+        ),
+    ),
     "prepared-declared": Prepared(
         1,
         PARAMETERS,

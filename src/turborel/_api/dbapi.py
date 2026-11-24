@@ -19,6 +19,7 @@ from __future__ import annotations
 from collections import OrderedDict
 from typing import TYPE_CHECKING, Final, Self
 
+from turborel._api import calls
 from turborel._api.results import ARRAYSIZE, Results, parameters_of
 from turborel._errors import (
     DatabaseError,
@@ -41,6 +42,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterator, Sequence
     from types import TracebackType
 
+    from turborel._api.calls import ParameterDescription
     from turborel._api.results import Description
     from turborel._client.connection import Connection as Client
     from turborel._statements.prepared import Statement
@@ -233,6 +235,21 @@ class Connection:
             self._statements.forget(sql)
             return self.client.execute(self._prepared(sql), values)
 
+    def _call(self, sql: str, values: tuple[object, ...]) -> tuple[Statement, Outcome]:
+        statement = self._prepared(sql)
+        try:
+            return statement, self.client.execute(
+                statement, calls.inputs_of(statement, values)
+            )
+        except ProgrammingError as e:
+            if e.sqlstate != STATEMENT_GONE:
+                raise
+            # Gone with a reset of the session: prepared again, once.
+            self._statements.forget(sql)
+            statement = self._prepared(sql)
+            inputs = calls.inputs_of(statement, values)
+            return statement, self.client.execute(statement, inputs)
+
     def _execute_many(
         self, sql: str, sets: Sequence[tuple[object, ...]]
     ) -> list[Outcome]:
@@ -281,6 +298,11 @@ class Cursor:
         return self._results.description
 
     @property
+    def parameters(self) -> tuple[ParameterDescription, ...] | None:
+        """Each `?` of the last `callproc`, its mode, position and type; else None."""
+        return self._results.parameters
+
+    @property
     def rowcount(self) -> int:
         """The rows the last statement gave or changed; -1 if not told."""
         return self._results.rowcount
@@ -319,6 +341,28 @@ class Cursor:
             outcome = self.connection._execute(operation, values)  # noqa: SLF001
         self._results.take(outcome)
         return self
+
+    def callproc(
+        self, procname: str, parameters: Sequence[object] | None = None
+    ) -> tuple[object, ...]:
+        """Call the procedure `procname` with a value for each argument, in order.
+
+        A value of an OUT parameter is given and not sent, as None, say.
+        Returns the values given, each of an OUT or INOUT parameter replaced
+        by what the procedure returned; that row is fetched too.
+
+        Raises:
+            InterfaceError: SQLSTATE TB910, of a closed cursor, a name not a
+                procedure's, or a count of values not its arguments'.
+            Error: The call's failure.
+        """
+        self._open()
+        values = parameters_of(parameters) or ()
+        sql = calls.call_text(procname, len(values))
+        statement, outcome = self.connection._call(sql, values)  # noqa: SLF001
+        self._results.take(outcome)
+        self._results.parameters = calls.described(statement)
+        return calls.returned(statement, values, outcome)
 
     def executemany(
         self, operation: str, seq_of_parameters: Sequence[Sequence[object]]

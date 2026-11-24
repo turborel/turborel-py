@@ -13,6 +13,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Final, Self
 
 from turborel._aio.connect import connect as connect_settings
+from turborel._api import calls
 from turborel._api.dbapi import KEPT_STATEMENTS, STATEMENT_GONE, Statements, options_of
 from turborel._api.results import ARRAYSIZE, Results, parameters_of
 from turborel._api.types import (
@@ -50,6 +51,7 @@ if TYPE_CHECKING:
     from types import TracebackType
 
     from turborel._aio.client import AsyncClient
+    from turborel._api.calls import ParameterDescription
     from turborel._api.results import Description
     from turborel._statements.prepared import Statement
     from turborel._statements.queries import Outcome
@@ -189,6 +191,21 @@ class Connection:
             self._statements.forget(sql)
             return await self.client.execute(await self._prepared(sql), values)
 
+    async def _call(
+        self, sql: str, values: tuple[object, ...]
+    ) -> tuple[Statement, Outcome]:
+        statement = await self._prepared(sql)
+        try:
+            inputs = calls.inputs_of(statement, values)
+            return statement, await self.client.execute(statement, inputs)
+        except ProgrammingError as e:
+            if e.sqlstate != STATEMENT_GONE:
+                raise
+            self._statements.forget(sql)
+            statement = await self._prepared(sql)
+            inputs = calls.inputs_of(statement, values)
+            return statement, await self.client.execute(statement, inputs)
+
     async def _execute_many(
         self, sql: str, sets: Sequence[tuple[object, ...]]
     ) -> list[Outcome]:
@@ -236,6 +253,11 @@ class Cursor:
         return self._results.description
 
     @property
+    def parameters(self) -> tuple[ParameterDescription, ...] | None:
+        """Each `?` of the last `callproc`, its mode, position and type; else None."""
+        return self._results.parameters
+
+    @property
     def rowcount(self) -> int:
         """The rows the last statement gave or changed; -1 if not told."""
         return self._results.rowcount
@@ -268,6 +290,18 @@ class Cursor:
             outcome = await self.connection._execute(operation, values)  # noqa: SLF001
         self._results.take(outcome)
         return self
+
+    async def callproc(
+        self, procname: str, parameters: Sequence[object] | None = None
+    ) -> tuple[object, ...]:
+        """Call `procname` with a value for each argument, as the blocking cursor's."""
+        self._open()
+        values = parameters_of(parameters) or ()
+        sql = calls.call_text(procname, len(values))
+        statement, outcome = await self.connection._call(sql, values)  # noqa: SLF001
+        self._results.take(outcome)
+        self._results.parameters = calls.described(statement)
+        return calls.returned(statement, values, outcome)
 
     async def executemany(
         self, operation: str, seq_of_parameters: Sequence[Sequence[object]]

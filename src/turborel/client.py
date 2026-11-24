@@ -36,6 +36,7 @@ from turborel._client.connect import (
 )
 from turborel._client.connection import Connection
 from turborel._client.lobs import Lob, LobReader, LobWriter
+from turborel._codec.called import Called, CalledParameter, ParameterMode
 from turborel._codec.composites import Column, Declared
 from turborel._codec.failures import Diagnostics, Failure, Notice
 from turborel._codec.replies import Complete, Timing
@@ -133,6 +134,8 @@ __all__ = [
     "Address",
     "Agent",
     "Batch",
+    "Called",
+    "CalledParameter",
     "Canceller",
     "Certificate",
     "ChannelBinding",
@@ -164,6 +167,7 @@ __all__ = [
     "OnError",
     "Options",
     "Outcome",
+    "ParameterMode",
     "Password",
     "Pipeline",
     "Pool",

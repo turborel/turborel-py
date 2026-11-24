@@ -35,6 +35,7 @@ GENERATED_VALUES: Final = "generated-values"
 FETCH_ENDS: Final = "fetch-ends"
 CONDITIONS: Final = "conditions"
 DECLARED_TYPES: Final = "declared-types"
+PARAMETER_MODES: Final = "parameter-modes"
 
 ALL: Final = (
     NOTICES,
@@ -56,6 +57,7 @@ ALL: Final = (
     FETCH_ENDS,
     CONDITIONS,
     DECLARED_TYPES,
+    PARAMETER_MODES,
 )
 """Every capability of version 1, in the order Ready grants them."""
 

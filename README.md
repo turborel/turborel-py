@@ -25,13 +25,14 @@ Its standard interface is DB-API 2.0 (PEP 249), with `?` parameters, and an asyn
 client built to do all that Turborel's own client library,
 turborel-client, does: TCP, Unix sockets and Windows named pipes, TLS,
 SCRAM-SHA-256 and SCRAM-SHA-256-PLUS, prepared statements and cursors,
-large objects, bulk copy, import and export, settings from a URI, the
+procedures called with each parameter's mode, large objects, bulk copy, import and export, settings from a URI, the
 environment and service and password files, several servers, pipelines
 and pools.
 
-The driver is built in milestones, M0 to M8, and does not connect to a
-server yet. [CONFORMANCE.md](CONFORMANCE.md) shows what is done, row by
-row, and [TODO.md](TODO.md) what is open.
+The driver was built in milestones, M0 to M8, each done.
+[CONFORMANCE.md](CONFORMANCE.md) shows, row by row, what of Turborel's
+protocol and client library it does and how each is tested, and
+[TODO.md](TODO.md) what is open.
 
 ## Requirements
 
@@ -56,9 +57,8 @@ pip install dist/turborel-0.0.0-py3-none-any.whl
 
 ## A first query
 
-This is what the standard API will be once milestone M7 builds it and
-M8's audit checks it. None of it runs yet, and its names may change
-until then.
+The standard API, connecting by a URI over TLS, the server's
+certificate checked against an authority of the program's:
 
 ```python
 import turborel
@@ -78,8 +78,7 @@ conn.close()
 
 [doc/](doc/README.md) is the manual: a User's Guide, an API Reference
 and Appendices, published at
-https://turborel.com/docs/drivers/python/. Each
-chapter is written as the milestone that fills it lands. The SQL a
+https://turborel.com/docs/drivers/python/. The SQL a
 program sends, and the server, are described in Turborel's own manual,
 [Turborel Documentation](https://github.com/turborel/turborel/blob/main/doc/README.md).
 [VERSIONING.md](VERSIONING.md) tells how the driver's releases are

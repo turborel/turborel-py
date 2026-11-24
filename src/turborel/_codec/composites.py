@@ -83,23 +83,26 @@ def read_parameter(r: Reader) -> Parameter:
 
 
 def read_columns(r: Reader) -> tuple[Column, ...]:
-    """A list of columns, then their tail: tag 19, each one's declared type.
-
-    [PROTOCOL Declared types] the tail of a Prepared and a Description, a
-    count, then of each column in order its type's name and its type as
-    SQL writes it; a count not the columns' is malformed.
-    """
+    """A Description's columns, then its tail: tag 19, each one's declared type."""
     columns = tuple(r.items(read_column))
     reading = tail.Tail(_DECLARED)
     while reading.next(r) is not None:
-        told = tuple(r.items(lambda r: Declared(r.string(), r.string())))
-        if len(told) != len(columns):
-            msg = "its declared types are not one for each column"
-            raise r.malformed(msg)
-        columns = tuple(
-            replace(c, declared=d) for c, d in zip(columns, told, strict=True)
-        )
+        columns = read_declared(r, columns)
     return columns
+
+
+def read_declared(r: Reader, columns: tuple[Column, ...]) -> tuple[Column, ...]:
+    """`columns`, each given its declared type of tag 19, read next.
+
+    [PROTOCOL Declared types] a count, then of each column in order its
+    type's name and its type as SQL writes it; a count not the columns'
+    is malformed.
+    """
+    told = tuple(r.items(lambda r: Declared(r.string(), r.string())))
+    if len(told) != len(columns):
+        msg = "its declared types are not one for each column"
+        raise r.malformed(msg)
+    return tuple(replace(c, declared=d) for c, d in zip(columns, told, strict=True))
 
 
 _DECLARED: Final = frozenset({tail.DECLARED})

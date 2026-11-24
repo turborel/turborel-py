@@ -21,6 +21,7 @@ from turborel._statements.queries import Rowset
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
+    from turborel._api.calls import ParameterDescription
     from turborel._codec.composites import Column
     from turborel._statements.queries import Outcome
 
@@ -59,10 +60,11 @@ class Results:
     rowcount: int = -1
     at: int = 0
     queried: bool = False
+    parameters: tuple[ParameterDescription, ...] | None = None
 
     def take(self, outcome: Outcome) -> None:
         """Keep `outcome`, a query's rows or another statement's completion."""
-        self.at = 0
+        self.at, self.parameters = 0, None
         if isinstance(outcome, Rowset):
             self.description = tuple(described(c) for c in outcome.columns)
             self.rows = outcome.rows
@@ -75,6 +77,7 @@ class Results:
     def counted(self, outcomes: Sequence[Outcome]) -> None:
         """Keep the completions of an `executemany`: the rows they changed, all told."""
         self.description, self.rows, self.queried, self.at = None, [], False, 0
+        self.parameters = None
         told = [getattr(o, "rows", None) for o in outcomes]
         self.rowcount = (
             -1 if any(n is None for n in told) else sum(n or 0 for n in told)

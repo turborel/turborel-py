@@ -17,6 +17,7 @@ from __future__ import annotations
 
 from typing import Final
 
+from turborel._api.calls import ParameterDescription
 from turborel._api.dbapi import Connection, Cursor, connect
 from turborel._api.types import (
     BINARY,
@@ -33,6 +34,7 @@ from turborel._api.types import (
     TimestampFromTicks,
     TypeCode,
 )
+from turborel._codec.called import ParameterMode
 from turborel._codec.datatypes import IntervalField, Qualifier
 from turborel._errors import (
     DatabaseError,
@@ -97,6 +99,8 @@ __all__ = [
     "Multiset",
     "NotSupportedError",
     "OperationalError",
+    "ParameterDescription",
+    "ParameterMode",
     "PluginValue",
     "ProgrammingError",
     "Qualifier",

@@ -16,6 +16,7 @@ conn.query_many(sql) -> Ran
 conn.set_query_attributes(attributes)
 
 conn.prepare(sql) -> Statement
+statement.marks, statement.procedure, statement.called
 conn.execute(statement, values=()) -> Rowset | Complete
 conn.open_cursor(statement, values=(), rows=0, cursor=0) -> Batch
 conn.fetch(statement, rows=0, cursor=0) -> Batch
@@ -55,10 +56,23 @@ unless the pairs are none.
 **Prepared statements.** `prepare` prepares `sql`, its dynamic
 parameters written `?`, under the connection's next statement number.
 The `Statement` holds its `number`, its `parameters`, each a `Parameter`
-of a `data_type`, in the order of their marks, and a query's `columns`,
-none of another statement. `execute` runs it with `values`, one for each
-mark, as `query` runs a statement. A statement lasts until it is
-deallocated or the session reset, across transactions.
+of a `data_type`, the inputs an execution gives values for, in the order
+of their marks, and its `columns`: a query's, or a CALL's, one for each
+`?` of an OUT or INOUT parameter, in the order of the procedure's
+parameters; none of another statement. `execute` runs it with `values`,
+one for each input, as `query` runs a statement; a CALL's output values
+come back as its one row. A statement lasts until it is deallocated or
+the session reset, across transactions.
+
+**Parameter modes.** With `parameter-modes`, which connecting asks for,
+a CALL of an SQL-invoked procedure is prepared with its `called`, a
+`Called` of the procedure's `schema` and specific `name` and each `?`
+of the statement in the order written, OUT ones too: a `CalledParameter`
+of its `mode`, a `ParameterMode` of `IN`, `INOUT` or `OUT`, its
+`position`, the ordinal position of the parameter whose argument holds
+it, and its `parameter`. `procedure` gives the schema and name;
+`marks` each `?`, of another statement each IN, of no position. An OUT
+`?` takes no value: an execution gives values for the others alone.
 
 **Cursors.** `open_cursor` executes a query and takes at most `rows` of
 its rows, all if 0; `fetch` takes the next `rows`; `close_cursor` closes
@@ -115,6 +129,7 @@ Without `conditions` a statement's conditions come as notices, with
 | A statement deallocated, or of no such number | the server's, 26000 |
 | A value of a type the protocol cannot carry | -301, 22000 |
 | A value its field cannot hold | -301, 22003 or 22008 |
+| A parameter mode of another code than 1, 2 or 4, or a position of 0, in a Prepared | -919, 08006, the connection lost |
 | A reply holding a value the driver cannot take, the rest of the statement's replies read past, the connection kept | -916, TB916; past a limit, -900, 0A000 |
 | A reply out of turn, or malformed | -919, 08006, the connection lost |
 

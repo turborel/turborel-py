@@ -41,6 +41,7 @@ GENERATED: Final = 16
 CONDITIONS: Final = 17
 TIME: Final = 18
 DECLARED: Final = 19
+CALLED: Final = 20
 
 DIAGNOSTICS: Final = frozenset(range(SEVERITY, CONSTRAINT + 1))
 """The tags of a failure's and a Notice's tail, 7 to 15."""

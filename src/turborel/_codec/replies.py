@@ -12,7 +12,14 @@ from dataclasses import dataclass, field, replace
 from typing import TYPE_CHECKING, Final
 
 from turborel._codec import tail
-from turborel._codec.composites import Column, Parameter, read_columns, read_parameter
+from turborel._codec.called import Called, read_prepared_tail
+from turborel._codec.composites import (
+    Column,
+    Parameter,
+    read_column,
+    read_columns,
+    read_parameter,
+)
 from turborel._codec.failures import Failure, Notice, read_failure, read_notice
 from turborel._codec.fields import Reader
 from turborel._codec.values import read_row
@@ -71,6 +78,8 @@ class Prepared:
     """In the order of their `?` marks."""
     columns: tuple[Column, ...]
     """None of a statement not a query."""
+    called: Called | None = None
+    """With `parameter-modes`, of a CALL: its procedure and each `?`'s mode."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -200,7 +209,8 @@ def _ready(r: Reader) -> Ready:
 def _prepared(r: Reader) -> Prepared:
     statement = r.u32()
     parameters = tuple(r.items(read_parameter))
-    return Prepared(statement, parameters, read_columns(r))
+    columns, called = read_prepared_tail(r, tuple(r.items(read_column)))
+    return Prepared(statement, parameters, columns, called)
 
 
 def _condition(r: Reader) -> Failure:

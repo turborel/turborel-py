@@ -16,6 +16,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from turborel._codec import requests
+from turborel._codec.called import CalledParameter, ParameterMode
 from turborel._codec.replies import Complete, Description, Error, Prepared
 from turborel._session.capabilities import CURSORS, DESCRIBE, FETCH_ENDS
 from turborel._session.ops import Send, receive
@@ -24,6 +25,7 @@ from turborel._statements.queries import Rowset, rows
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
+    from turborel._codec.called import Called
     from turborel._codec.composites import Column, Parameter
     from turborel._session.ops import Steps
     from turborel._session.state import Session
@@ -38,9 +40,33 @@ class Statement:
 
     number: int
     parameters: tuple[Parameter, ...]
-    """In the order of their `?` marks."""
+    """Its input parameters, the values an execution gives, in the order of
+    their `?` marks: of a CALL, not those of OUT parameters."""
     columns: tuple[Column, ...]
-    """A query's columns; none of another statement."""
+    """A query's columns; of a CALL, one for each `?` of an OUT or INOUT
+    parameter, in the procedure's parameters' order; none of another."""
+    called: Called | None = None
+    """With `parameter-modes`, of a CALL of an SQL-invoked procedure: the
+    procedure and each `?` with its parameter's mode and position."""
+
+    @property
+    def procedure(self) -> tuple[str, str] | None:
+        """Of a CALL, the procedure's schema and specific name, where told."""
+        return None if self.called is None else (self.called.schema, self.called.name)
+
+    @property
+    def marks(self) -> tuple[CalledParameter, ...]:
+        """Each `?` in the order written, with its mode, position and type.
+
+        Of a CALL, as the server told them with `parameter-modes`, OUT ones
+        too; else each an input, IN, of no position [CLIENT Prepared
+        statements].
+        """
+        if self.called is not None:
+            return self.called.parameters
+        return tuple(
+            CalledParameter(ParameterMode.IN, None, p) for p in self.parameters
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -64,7 +90,7 @@ def completion(session: Session) -> Steps[Complete]:
 def _prepared(session: Session) -> Steps[Statement]:
     reply = yield from receive(session)
     if isinstance(reply, Prepared):
-        return Statement(reply.statement, reply.parameters, reply.columns)
+        return Statement(reply.statement, reply.parameters, reply.columns, reply.called)
     if isinstance(reply, Error):
         raise session.failed(reply.failure)
     raise session.lose_by("the server sent no Prepared")

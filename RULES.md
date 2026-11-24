@@ -69,11 +69,11 @@ Each is told in full in [§7](#7-the-decisions).
 | `uv.lock` | the development tools, locked (R-DEP-3) |
 | `.python-version` | the Python uv runs locally: 3.11, the oldest |
 | `src/turborel/__init__.py` | the package, the standard API: `connect`, PEP 249's globals, the connection and cursor, type objects, constructors and exceptions (D2) |
-| `src/turborel/_api/` | the standard API's parts: the blocking connection and cursor, what a cursor keeps of an outcome, the type codes, type objects and constructors |
+| `src/turborel/_api/` | the standard API's parts: the blocking connection and cursor, what a cursor keeps of an outcome, `callproc`'s call and its parameters described, the type codes, type objects and constructors |
 | `src/turborel/aio.py` | `turborel.aio`, the standard API for asyncio (D2) |
 | `src/turborel/_aio/` | the asyncio interface's parts: its stream, its runner of the same requests, its client, connecting by settings |
 | `src/turborel/_errors.py` | PEP 249's exceptions, each carrying SQLCODE and SQLSTATE (D9) |
-| `src/turborel/_codec/` | the `codec` layer, without I/O: frames, fields, types and values, a type as SQL writes it, JSON, the tail, every message, compression (D1) |
+| `src/turborel/_codec/` | the `codec` layer, without I/O: frames, fields, types and values, a type as SQL writes it, a CALL's parameter modes, JSON, the tail, every message, compression (D1) |
 | `src/turborel/_values.py` | the classes of values Python has no type of its own for (doc/appendix/a-types.md) |
 | `src/turborel/_auth/` | the `auth` layer: trust, password, certificate, SCRAM and its key cache |
 | `src/turborel/_tls/` | the `tls` layer: TLS contexts and the channel SCRAM binds |
@@ -588,7 +588,7 @@ there the live tests skip, which `verify.yml` says.
 Turborel's `doc/client/05-protocol-frames.tsv` holds a sample of every
 request and reply, data type and value tag [PROTOCOL Sample frames]. The
 driver keeps a copy of it, `tests/codec/samples/05-protocol-frames.tsv`,
-taken at Turborel's main commit 045e42a9, and its tests read the copy,
+taken at Turborel's main commit 1afa44c2, and its tests read the copy,
 so they read the same bytes on every machine, with no checkout of
 Turborel beside them. It is copied again, and the commit here changed,
 when the headings move to a later commit (D6). Reading the file from a
