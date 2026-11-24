@@ -20,6 +20,14 @@ from turborel._codec.composites import (
     read_columns,
     read_parameter,
 )
+from turborel._codec.debug import (
+    DEBUG,
+    EVENT,
+    Debugged,
+    Event,
+    read_debugged,
+    read_event,
+)
 from turborel._codec.failures import Failure, Notice, read_failure, read_notice
 from turborel._codec.fields import Reader
 from turborel._codec.values import read_row
@@ -41,6 +49,8 @@ LOB: Final = ord("L")
 NOTICE: Final = ord("N")
 STATUS: Final = ord("T")
 PONG: Final = ord("G")
+DEBUGGED: Final = DEBUG
+"""Debugged 'V', with `debugger`: what a Debug request gave back."""
 
 # What a Lob reply holds [PROTOCOL Lob 'L'], the reply.
 LOB_DATA: Final = 0
@@ -179,6 +189,8 @@ Reply = (
     | Notice
     | Status
     | Pong
+    | Debugged
+    | Event
 )
 """Any reply a server sends."""
 
@@ -266,6 +278,8 @@ _READERS: Final[dict[int, Callable[[Reader], Reply]]] = {
     NOTICE: read_notice,
     STATUS: lambda r: Status(r.string(), r.string()),
     PONG: lambda _: Pong(),
+    DEBUGGED: read_debugged,
+    EVENT: read_event,
 }
 
 
@@ -298,11 +312,12 @@ def completed_head(kind: int, body: bytes) -> Complete | None:
 def ends_request(kind: int, body: bytes) -> bool:
     """Whether a reply of kind `kind`, decoded or not, is its request's last.
 
-    A Description, Rows, a Notice or a Status has more after it; a
+    A Description, Rows, a Notice, a Status or an Event, sent unasked,
+    has more after it; a
     Complete has if its tail says more (tag 5); any other reply ends its
     request's.
     """
-    if kind in (DESCRIPTION, ROWS, NOTICE, STATUS):
+    if kind in (DESCRIPTION, ROWS, NOTICE, STATUS, EVENT):
         return False
     if kind == COMPLETE:
         head = completed_head(kind, body)

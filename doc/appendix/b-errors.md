@@ -53,6 +53,7 @@ SQLCODE -919 and SQLSTATE 08006, ends the connection too.
 | TB910 | -910 | an interface used wrongly |
 | TB920 | -920 | a statement cancelled |
 | TBR01 | -920 | a replica had not applied the commit position of REPLICATION.READ_AFTER in time |
+| TBD01 | -910 | a debugger's request its target's state does not allow ([Debugging Routines](../client/31-debugging.md)) |
 | 01T01 | | a notice: Reset or ChangeUser rolled back the transaction that was active |
 
 ## Raised by the driver

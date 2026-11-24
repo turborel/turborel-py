@@ -73,19 +73,19 @@ Each is told in full in [§7](#7-the-decisions).
 | `src/turborel/aio.py` | `turborel.aio`, the standard API for asyncio (D2) |
 | `src/turborel/_aio/` | the asyncio interface's parts: its stream, its runner of the same requests, its client, connecting by settings |
 | `src/turborel/_errors.py` | PEP 249's exceptions, each carrying SQLCODE and SQLSTATE (D9) |
-| `src/turborel/_codec/` | the `codec` layer, without I/O: frames, fields, types and values, a type as SQL writes it, a CALL's parameter modes, JSON, the tail, every message, compression (D1) |
+| `src/turborel/_codec/` | the `codec` layer, without I/O: frames, fields, types and values, a type as SQL writes it, a CALL's parameter modes, the debugger's messages, JSON, the tail, every message, compression (D1) |
 | `src/turborel/_values.py` | the classes of values Python has no type of its own for (doc/appendix/a-types.md) |
 | `src/turborel/_auth/` | the `auth` layer: trust, password, certificate, SCRAM and its key cache |
 | `src/turborel/_tls/` | the `tls` layer: TLS contexts and the channel SCRAM binds |
 | `src/turborel/_transport/` | the `transport` layer: TCP, Unix sockets, named pipes, timeouts |
-| `src/turborel/_session/` | the `session` layer: each request as steps without I/O, the session's state, and the blocking runner |
+| `src/turborel/_session/` | the `session` layer: each request as steps without I/O, the debugger's among them, the session's state, and the blocking runner |
 | `src/turborel/_statements/` | the `statements` layer, as steps without I/O: queries, several statements at once, prepared statements and their cursors |
 | `src/turborel/_lobs/` | the `lobs` layer, as steps without I/O: large objects read by their locators, created, appended to, freed and held |
 | `src/turborel/_copy/` | the `copy` layer: bulk copy as steps without I/O; export, as CSV or the protocol's frames, and each value as text; import, its sources and delimited text, and names as SQL writes them |
 | `src/turborel/_settings/` | the `settings` layer: options, the URI, the service and password files, settings resolved, TLS by mode, several servers and roles |
 | `src/turborel/_pipeline/` | the `pipeline` layer: requests queued, written a window at a time, one outcome read for each |
 | `src/turborel/_pool/` | the `pool` layer: pools of connections, their check and reset, and the SQL-agent |
-| `src/turborel/_client/` | the low-level client's parts: a connection's core, its statements, its large objects, its copy and export, cancelling, connecting |
+| `src/turborel/_client/` | the low-level client's parts: a connection's core, its statements, its large objects, its copy and export, its routine debugger, cancelling, connecting |
 | `src/turborel/client.py` | the low-level client, public: connections, statements, large objects, copy, import and export, settings, pipelines, pools, the SQL-agent, mechanisms, TLS, timeouts (D2) |
 | `src/turborel/py.typed` | says the package is typed (PEP 561) |
 | `tests/` | the tests, a folder for each layer, as `tests/codec/` for `_codec`; `tests/kit.py` the frames and peer they share; `tests/codec/samples/` the copy of Turborel's sample frames and what each means (D15) |
@@ -588,7 +588,7 @@ there the live tests skip, which `verify.yml` says.
 Turborel's `doc/client/05-protocol-frames.tsv` holds a sample of every
 request and reply, data type and value tag [PROTOCOL Sample frames]. The
 driver keeps a copy of it, `tests/codec/samples/05-protocol-frames.tsv`,
-taken at Turborel's main commit 1afa44c2, and its tests read the copy,
+taken at Turborel's main commit 5863fe65, and its tests read the copy,
 so they read the same bytes on every machine, with no checkout of
 Turborel beside them. It is copied again, and the commit here changed,
 when the headings move to a later commit (D6). Reading the file from a

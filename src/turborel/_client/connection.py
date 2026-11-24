@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import IO, TYPE_CHECKING
 
-from turborel._client.bulk import Bulk
+from turborel._client.debugging import Debugging
 from turborel._session.capabilities import Offer
 from turborel._transport.stream import Stream
 
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from turborel._transport.timeouts import Timeouts
 
 
-class Connection(Bulk):
+class Connection(Debugging):
     """A session of a turborel server, over one stream."""
 
     @classmethod

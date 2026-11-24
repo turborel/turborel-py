@@ -12,6 +12,8 @@ import uuid
 from decimal import Decimal
 from typing import Final
 
+from tests.codec.samples.expected_debug import REPLIES as DEBUGGED
+
 from turborel import (
     Interval,
     IntervalField,
@@ -367,5 +369,5 @@ VALUES: Final[dict[str, Reply]] = {
 }
 """Each value tag's sample, Rows of one row of one value."""
 
-REPLIES: Final[dict[str, Reply]] = {**MESSAGES, **TYPES, **VALUES}
+REPLIES: Final[dict[str, Reply]] = {**MESSAGES, **TYPES, **VALUES, **DEBUGGED}
 """Every server sample's reply."""

@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Final
 
+from tests.codec.samples.expected_debug import REQUESTS as DEBUG
+
 from turborel._codec import requests as q
 
 if TYPE_CHECKING:
@@ -71,5 +73,6 @@ REQUESTS: Final[dict[str, Callable[[], bytes]]] = {
     "copy-end": lambda: q.CopyEnd().encode(),
     "copy-end-abandon": lambda: q.CopyEnd(abandon=True).encode(),
     "query-compressed": lambda: q.Query(BIG, ends=True).encode(),
+    **DEBUG,
 }
 """Every client sample's request; of a compressed one, the frame it holds."""

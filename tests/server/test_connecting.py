@@ -40,7 +40,7 @@ DEFAULT_ASKED = (
     "notices", "status", "diagnostics", "describe", "cursors", "ping", "reset",
     "change-user", "query-attributes", "connection-attributes", "multi-statement",
     "commit-position", "copy", "row-counts", "generated-values", "fetch-ends",
-    "conditions", "declared-types", "parameter-modes",
+    "conditions", "declared-types", "parameter-modes", "debugger",
 )  # fmt: skip
 
 

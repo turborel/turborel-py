@@ -31,6 +31,7 @@ from turborel._session.raising import ends_connection, raised
 if TYPE_CHECKING:
     from collections.abc import Callable
 
+    from turborel._codec.debug import Event
     from turborel._codec.failures import Failure, Notice
     from turborel._codec.replies import Reply
     from turborel._errors import Error as DriverError
@@ -59,6 +60,8 @@ class Told:
     """The threshold the client compresses from, once compression is granted."""
     attributes: tuple[tuple[str, str], ...] = ()
     """The attributes each statement carries, with `query-attributes`."""
+    events: deque[Event] = field(default_factory=deque)
+    """With `debugger`, the Events of the target not yet read, in order."""
 
     def notice(self, notice: Notice) -> None:
         """A Notice: handed to the handler if there is one, else kept."""

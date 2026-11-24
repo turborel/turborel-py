@@ -36,6 +36,8 @@ FETCH_ENDS: Final = "fetch-ends"
 CONDITIONS: Final = "conditions"
 DECLARED_TYPES: Final = "declared-types"
 PARAMETER_MODES: Final = "parameter-modes"
+DEBUGGER: Final = "debugger"
+"""The routine debugger: Debug, and the Event sent unasked (an extension)."""
 
 ALL: Final = (
     NOTICES,
@@ -58,6 +60,7 @@ ALL: Final = (
     CONDITIONS,
     DECLARED_TYPES,
     PARAMETER_MODES,
+    DEBUGGER,
 )
 """Every capability of version 1, in the order Ready grants them."""
 

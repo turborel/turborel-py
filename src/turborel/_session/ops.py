@@ -15,6 +15,7 @@ from typing import TYPE_CHECKING, Final, TypeVar
 
 from turborel._codec import requests
 from turborel._codec.compress import unwrap
+from turborel._codec.debug import Event
 from turborel._codec.failures import Notice
 from turborel._codec.replies import (
     Challenge,
@@ -85,14 +86,41 @@ def _frame(session: Session) -> Steps[Frame]:
 
 
 def _took(session: Session, reply: Reply) -> Reply | None:
-    """`reply`, unless a Notice or Status, which is taken; its end noted."""
+    """`reply`, unless a Notice, Status or Event, which is taken; its end noted.
+
+    An Event is kept for the debugger to read, and ends no request
+    [PROTOCOL Event 'W'].
+    """
     if isinstance(reply, Notice):
         session.told.notice(reply)
         return None
     if isinstance(reply, Status):
         session.told.settings[reply.name] = reply.value
         return None
+    if isinstance(reply, Event):
+        session.told.events.append(reply)
+        return None
     return session.noted(reply)
+
+
+def next_event(session: Session) -> Steps[Event | None]:
+    """The next frame, read between requests where an Event is waited for.
+
+    An Event given; a Notice or a Status taken, and None given.
+
+    Raises:
+        Error: Of an Error, the server's failure; of any other reply, a
+            connection failure, as it answers no request.
+    """
+    kind, body = yield from _frame(session)
+    reply = _decoded(session, kind, body)
+    if isinstance(reply, Event):
+        return reply
+    if isinstance(reply, Error):
+        raise session.failed(reply.failure)
+    if _took(session, reply) is None:
+        return None
+    raise session.lose_by("the server answered no request")
 
 
 def _decoded(session: Session, kind: int, body: bytes) -> Reply:
@@ -153,9 +181,9 @@ def _drained(session: Session, kind: int, body: bytes) -> Steps[None]:
 def terminated(session: Session, frame: Frame) -> None:
     """Take a frame the server sent after Terminate, before it closed.
 
-    A Notice, a Status or a Pong is read past; an Error, as of a commit
-    that failed as the session ended, is raised; any other reply is out
-    of turn [PROTOCOL Terminate 'X'].
+    A Notice, a Status, a Pong or a debugger's Event is read past; an
+    Error, as of a commit that failed as the session ended, is raised;
+    any other reply is out of turn [PROTOCOL Terminate 'X'].
 
     Raises:
         Error: The server's failure, or a connection failure.
@@ -165,7 +193,7 @@ def terminated(session: Session, frame: Frame) -> None:
     reply = decode(kind, body)
     if isinstance(reply, Error):
         raise raised(reply.failure)
-    if not isinstance(reply, Notice | Status | Pong):
+    if not isinstance(reply, Notice | Status | Pong | Event):
         msg = "the server answered Terminate"
         raise connection_failure(msg)
 

@@ -2,7 +2,7 @@
 
 Taken from turborel's doc/client/05-protocol.md (`PROTOCOL`), and from
 02-library.md and 02-library-connections.md (`CLIENT`), at main's commit
-1afa44c2. A heading the documents rename or add is changed here in the
+5863fe65. A heading the documents rename or add is changed here in the
 same commit as the code that follows it (RULES.md D6, R-TRACE-2). Each
 document's title, its first heading, is one of its headings too.
 """
@@ -50,6 +50,9 @@ PROTOCOL: Final = frozenset(
         "Ready 'R'",
         "Prepared 'P'",
         "Parameter modes",
+        "Debug 'V'",
+        "Debugged 'V'",
+        "Event 'W'",
         "Description 'D'",
         "Rows 'B'",
         "Suspended 'S'",
@@ -74,6 +77,7 @@ CLIENT: Final = frozenset(
         "Timeouts",
         "Running statements",
         "Prepared statements",
+        "Debugging routines",
         "Large objects",
         "XML values",
         "UUIDs",

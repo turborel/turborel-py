@@ -69,6 +69,7 @@ The failures the driver raises itself:
 | A server that cannot be reached, a TLS handshake that fails, a wait that runs out, a reply malformed, out of turn or too long | `OperationalError` | -919, 08006 |
 | A reply holding a value the driver cannot take, its statement's other replies read past and the connection kept ([Values](23-values.md)) | `OperationalError` | -916, TB916 |
 | A method needing a capability the server did not grant, before it sends anything | `OperationalError` | -919, 08006 |
+| A debugger's wait bounded by a timeout over a stream given to `open`, the connection kept ([Debugging Routines](31-debugging.md)) | `OperationalError` | -919, 08006 |
 | A password, or SCRAM, over plain TCP, before connecting | `OperationalError` | -919, 28000 |
 | A value of a type the protocol cannot carry | `DataError` | -301, 22000 |
 | A number its field cannot hold, or not finite | `DataError` | -301, 22003 |

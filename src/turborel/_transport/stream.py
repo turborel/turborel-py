@@ -26,6 +26,8 @@ class Stream:
     def __init__(self, held: socket.socket | IO[bytes]) -> None:
         """Hold `held`, a connected socket or an open pipe."""
         self._held = held
+        self._ahead = b""
+        """A byte read ahead by `arrives_within`, the first the next read gives."""
 
     @property
     def held(self) -> socket.socket | IO[bytes]:
@@ -62,12 +64,46 @@ class Stream:
             raise io_failed("send", e) from e
 
     def _read(self, count: int) -> bytes:
+        if self._ahead:
+            ahead, self._ahead = self._ahead, b""
+            return ahead
         try:
             if isinstance(self._held, socket.socket):
                 return self._held.recv(count)
             return self._held.read(count) or b""
         except OSError as e:
             raise io_failed("receive", e) from e
+
+    def arrives_within(self, within: float | None, kept: float | None) -> bool:
+        """Whether a frame begins to arrive within `within` seconds, None for no limit.
+
+        Its first byte is read ahead and kept for the next read, so nothing
+        of it is lost; the stream's own timeout, `kept`, put back. A named
+        pipe waits without limit.
+
+        Raises:
+            OperationalError: SQLSTATE 08006, if the server closed the
+                connection, or it fails.
+        """
+        if self._ahead:
+            return True
+        if not isinstance(self._held, socket.socket):
+            self._ahead = self.read_exact(1)
+            return True
+        try:
+            self._held.settimeout(within)
+            first = self._held.recv(1)
+        except TimeoutError:
+            return False
+        except OSError as e:
+            raise io_failed("receive", e) from e
+        finally:
+            self.set_timeout(kept)
+        if not first:
+            msg = "the server closed the connection"
+            raise connection_failure(msg)
+        self._ahead = first
+        return True
 
     def read_exact(self, count: int) -> bytes:
         """Exactly `count` bytes, read as they come, at most 64 KiB at a time.

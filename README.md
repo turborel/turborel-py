@@ -25,7 +25,8 @@ Its standard interface is DB-API 2.0 (PEP 249), with `?` parameters, and an asyn
 client built to do all that Turborel's own client library,
 turborel-client, does: TCP, Unix sockets and Windows named pipes, TLS,
 SCRAM-SHA-256 and SCRAM-SHA-256-PLUS, prepared statements and cursors,
-procedures called with each parameter's mode, large objects, bulk copy, import and export, settings from a URI, the
+procedures called with each parameter's mode, the routine debugger,
+large objects, bulk copy, import and export, settings from a URI, the
 environment and service and password files, several servers, pipelines
 and pools.
 
