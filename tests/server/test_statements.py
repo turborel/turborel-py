@@ -90,7 +90,7 @@ def test_a_failure_carries_all_its_error_says(conn: Connection) -> None:
     with pytest.raises(ProgrammingError) as failure:
         conn.query("SELECT * FROM NOPE")
     error = failure.value
-    assert (error.sqlcode, error.sqlstate) == (-103, "2A000")
+    assert (error.sqlcode, error.sqlstate) == (-103, "42000")
     assert error.message == "table ANN.NOPE is not defined"
     assert error.rule == "X3.135-1986 §5.4 SR5"
     assert error.position == 14

@@ -132,7 +132,7 @@ print(len(ran.outcomes), ran.failure.sqlstate, ran.failure.message)
 ```
 
 ```text
-1 2A000 table ANN.NOWHERE is not defined
+1 42000 table ANN.NOWHERE is not defined
 ```
 
 A text of no statement gives one completion.

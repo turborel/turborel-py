@@ -32,8 +32,8 @@ PRIVILEGE_SQLCODE: Final = -104
 CONNECTION_SQLCODE: Final = -919
 UNSUPPORTED_SQLCODE: Final = -900
 TRANSACTION_STATE_SQLCODE: Final = -917
-SYNTAX_ERROR: Final = "2A000"
-"""SQLSTATE 2A000: a syntax error or access rule violation in a direct statement."""
+SYNTAX_ERROR: Final = "42000"
+"""SQLSTATE 42000: a syntax error or access rule violation, run or prepared."""
 UNABLE_TO_CONNECT: Final = "08001"
 CONNECTION_NAME_IN_USE: Final = "08002"
 CONNECTION_DOES_NOT_EXIST: Final = "08003"
@@ -248,7 +248,7 @@ def parse(src: str) -> Statement | None:  # noqa: PLR0911  # A return a statemen
     """`src` read as a connection statement; None if it is another.
 
     Raises:
-        Error: SQLCODE -102, SQLSTATE 2A000, of one that breaks its syntax.
+        Error: SQLCODE -102, SQLSTATE 42000, of one that breaks its syntax.
     """
     parser = _Parser(src)
     first, second = (
@@ -294,7 +294,7 @@ def text(token: _Token) -> str:
     """The character string a name is, its spaces trimmed [§15.1 GR2, GR6].
 
     Raises:
-        Error: SQLCODE -103, SQLSTATE 2A000, of a literal of another kind.
+        Error: SQLCODE -103, SQLSTATE 42000, of a literal of another kind.
     """
     if token.kind != "character":
         msg = "a client's connection statement names by character string literals"

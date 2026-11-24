@@ -74,7 +74,7 @@ def test_the_worked_example_s_replies() -> None:
 
 FAILURE = (
     u32((-103) & 0xFFFF_FFFF)
-    + text("2A000")
+    + text("42000")
     + text("column K is ambiguous")
     + b"\x01"
     + text("X3.135-1986 §5.7 SR3b")
@@ -83,7 +83,7 @@ FAILURE = (
     + b"\x00"
 )
 CITED = Failure(
-    -103, "2A000", "column K is ambiguous", "X3.135-1986 §5.7 SR3b", 7, active=False
+    -103, "42000", "column K is ambiguous", "X3.135-1986 §5.7 SR3b", 7, active=False
 )
 
 

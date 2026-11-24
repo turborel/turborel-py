@@ -58,6 +58,7 @@ ROLE_QUERY: Final = "SELECT ROLE FROM INFORMATION_SCHEMA.REPLICAS WHERE IS_SELF 
 SERVER_READ_ONLY: Final = "SERVER_READ_ONLY"
 """The session status of whether the server takes no changes."""
 _NO_SUCH_TABLE_CLASSES: Final = ("2A", "42")
+"""A missing REPLICAS view's classes: 42000, or 2A000 of an older server."""
 
 _T = TypeVar("_T")
 

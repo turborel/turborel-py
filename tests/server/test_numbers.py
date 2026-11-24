@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from turborel import DataError
+from turborel import DataError, ProgrammingError
 from turborel.client import Connection, Rowset, Trust, connect
 
 if TYPE_CHECKING:
@@ -61,13 +61,31 @@ def test_an_exact_number_of_39_digits_is_refused(conn: Connection) -> None:
     """Verifies: [PROTOCOL Values] an exact number past 38 digits, refused with 22003.
 
     Its units fit tag 2's `i128`, so it is sent, and the server refuses
-    it, as a parameter and as a result of SQL; the connection goes on.
+    it, as a parameter and as a result of SQL, 22003; a literal of 39
+    digits is a syntax error, -103 and 42000, and text of a number past
+    the implementation's range, cast or given as a parameter, 22003; the
+    connection goes on.
     """
     conn.query("CREATE TABLE WIDER (N NUMERIC(38,0))")
     insert = conn.prepare("INSERT INTO WIDER VALUES (?)")
     with pytest.raises(DataError) as parameter:
         conn.execute(insert, (10**38,))
     assert (parameter.value.sqlcode, parameter.value.sqlstate) == (-301, "22003")
+    conn.query("ROLLBACK")
+    with pytest.raises(ProgrammingError) as literal:
+        conn.query(f"VALUES {10**38}")
+    assert (literal.value.sqlcode, literal.value.sqlstate) == (-103, "42000")
+    with pytest.raises(DataError) as text:
+        conn.query("VALUES CAST('1E400' AS DOUBLE PRECISION)")
+    assert text.value.sqlstate == "22003"
+    conn.query("ROLLBACK")
+    conn.query("CREATE TABLE FAR (X DOUBLE PRECISION)")
+    with pytest.raises(DataError) as given:
+        conn.execute(
+            conn.prepare("INSERT INTO FAR VALUES (CAST(? AS DOUBLE PRECISION))"),
+            ("1E400",),
+        )
+    assert given.value.sqlstate == "22003"
     conn.query("ROLLBACK")
     with pytest.raises(DataError) as product:
         conn.query(f"VALUES CAST({WIDEST} AS NUMERIC(38,0)) * 10")

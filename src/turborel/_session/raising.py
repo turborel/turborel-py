@@ -52,6 +52,7 @@ _BY_CLASS: Final[dict[str, type[Error]]] = {
     "2D": InternalError,
     "2E": ProgrammingError,
     "34": ProgrammingError,
+    "37": ProgrammingError,
     "3D": ProgrammingError,
     "3F": ProgrammingError,
     "40": OperationalError,

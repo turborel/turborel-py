@@ -97,12 +97,12 @@ def test_a_connection_statement_that_breaks_its_syntax(
 ) -> None:
     """Verifies: [CLIENT The SQL-agent] connection statements, parsed.
 
-    One that breaks its syntax refused (SQLCODE -102, SQLSTATE 2A000),
+    One that breaks its syntax refused (SQLCODE -102, SQLSTATE 42000),
     its message and position turborel-client's.
     """
     with pytest.raises(ProgrammingError) as broken:
         parse(sql)
-    assert (broken.value.sqlcode, broken.value.sqlstate) == (-102, "2A000")
+    assert (broken.value.sqlcode, broken.value.sqlstate) == (-102, "42000")
     assert (broken.value.message, broken.value.position) == (message, position)
 
 
@@ -208,7 +208,7 @@ def test_the_rules_of_each_statement() -> None:
         ("CONNECT TO 'shut'", OperationalError, "08004"),
         ("SET CONNECTION 'none'", OperationalError, "08003"),
         ("DISCONNECT 'none'", OperationalError, "08003"),
-        ("CONNECT TO 42", ProgrammingError, "2A000"),
+        ("CONNECT TO 42", ProgrammingError, "42000"),
     ]
     for sql, kind, sqlstate in cases:
         with pytest.raises(kind) as refused:

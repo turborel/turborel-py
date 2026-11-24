@@ -30,7 +30,7 @@ except ProgrammingError as e:
 ```
 
 ```text
--103 2A000
+-103 42000
 table ANN.NOWHERE is not defined
 X3.135-1986 §5.4 SR5 17 True
 ```

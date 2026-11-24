@@ -97,9 +97,9 @@ def test_the_driver_raises_turborels_conditions(
 def test_an_error_of_the_server_carries_its_whole_failure() -> None:
     """Verifies: [DESIGN] D9 the rule, position, active flag and diagnostics too."""
     diagnostics = Diagnostics(severity="ERROR", table="STAFF")
-    failure = Failure(-103, "2A000", "m", "X3.135-1986 §5.7 SR3b", 7, True, diagnostics)  # noqa: FBT003
+    failure = Failure(-103, "42000", "m", "X3.135-1986 §5.7 SR3b", 7, True, diagnostics)  # noqa: FBT003
     raised = turborel.ProgrammingError(
-        "m", sqlcode=-103, sqlstate="2A000", failure=failure
+        "m", sqlcode=-103, sqlstate="42000", failure=failure
     )
     assert (raised.rule, raised.position, raised.transaction_active) == (
         "X3.135-1986 §5.7 SR3b",

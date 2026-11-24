@@ -23,15 +23,16 @@ failure from another
 | 26 | invalid SQL statement name | `ProgrammingError` | |
 | 27 | triggered data change violation | `OperationalError` | |
 | 28 | invalid authorization specification | `OperationalError` | as the connection is made, of SQLCODE -919 |
-| 2A | syntax error or access rule violation | `ProgrammingError` | |
+| 2A | syntax error or access rule violation, of an older server | `ProgrammingError` | |
 | 2B | dependent privilege descriptors still exist | `InternalError` | |
 | 2D | invalid transaction termination | `InternalError` | |
 | 2E | invalid connection name | `ProgrammingError` | |
 | 34 | invalid cursor name | `ProgrammingError` | |
+| 37 | syntax error or access rule violation in dynamic SQL, of an older server | `ProgrammingError` | |
 | 3D | invalid catalog name | `ProgrammingError` | |
 | 3F | invalid schema name | `ProgrammingError` | |
 | 40 | transaction rollback | `OperationalError` | |
-| 42 | syntax error or access rule violation | `ProgrammingError` | |
+| 42 | syntax error or access rule violation, run or prepared | `ProgrammingError` | |
 | 44 | with check option violation | `ProgrammingError` | |
 | 53 | insufficient resources | `OperationalError` | |
 | 54 | program limit exceeded | `OperationalError` | |

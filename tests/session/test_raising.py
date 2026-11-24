@@ -38,6 +38,7 @@ def failure(sqlstate: str, sqlcode: int = -1) -> Failure:
         ("24000", InternalError),
         ("42000", ProgrammingError),
         ("2A000", ProgrammingError),
+        ("37000", ProgrammingError),
         ("07006", ProgrammingError),
         ("TB910", InterfaceError),
         ("HY000", DatabaseError),

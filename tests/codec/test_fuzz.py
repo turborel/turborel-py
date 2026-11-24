@@ -50,7 +50,7 @@ def row_body(values: list[object]) -> bytes:
 
 FAILURE = (
     u32(0xFFFF_FF99)
-    + text("2A000")
+    + text("42000")
     + text("m")
     + b"\x01"
     + text("r")

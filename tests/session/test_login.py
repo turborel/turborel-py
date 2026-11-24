@@ -193,7 +193,7 @@ def test_a_query_gives_its_rows_or_its_completion() -> None:
         peer.reply(complete("01000"))
         done = conn.query("UPDATE T SET A = TRUE")
         assert (done, conn.in_transaction) == (complete_of("01000"), False)
-        peer.reply(error(-103, "2A000", "no table", active=True))
+        peer.reply(error(-103, "42000", "no table", active=True))
         with pytest.raises(ProgrammingError):
             conn.query("SELECT * FROM NOPE")
         assert (conn.in_transaction, conn.is_lost) == (True, False)

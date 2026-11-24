@@ -45,8 +45,8 @@ gives its completion, or None of another statement.
 
 | Condition | SQLCODE, SQLSTATE |
 |---|---|
-| A connection statement that breaks its syntax | -102, 2A000 |
-| A name not a character string literal | -103, 2A000 |
+| A connection statement that breaks its syntax | -102, 42000 |
+| A name not a character string literal | -103, 42000 |
 | CONNECT or SET CONNECTION in an active transaction | -900, 0A001 |
 | A user that is no authorization identifier | -104, 28000 |
 | A name that is no identifier | -919, 2E000 |
@@ -77,7 +77,7 @@ except Exception as e:
 ```
 
 ```text
--102 2A000 expected a <literal>, found DB1 11
+-102 42000 expected a <literal>, found DB1 11
 08003 there is no current connection ISO/IEC 9075:1992 §15.3 GR9
 ```
 
