@@ -588,7 +588,7 @@ there the live tests skip, which `verify.yml` says.
 Turborel's `doc/client/05-protocol-frames.tsv` holds a sample of every
 request and reply, data type and value tag [PROTOCOL Sample frames]. The
 driver keeps a copy of it, `tests/codec/samples/05-protocol-frames.tsv`,
-taken at Turborel's main commit 5863fe65, and its tests read the copy,
+taken at Turborel's main commit 45cb0d7f, and its tests read the copy,
 so they read the same bytes on every machine, with no checkout of
 Turborel beside them. It is copied again, and the commit here changed,
 when the headings move to a later commit (D6). Reading the file from a

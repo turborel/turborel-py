@@ -38,6 +38,8 @@ DECLARED_TYPES: Final = "declared-types"
 PARAMETER_MODES: Final = "parameter-modes"
 DEBUGGER: Final = "debugger"
 """The routine debugger: Debug, and the Event sent unasked (an extension)."""
+COLUMNS: Final = "columns"
+"""CopyColumns: a copy's rows by column, as text, with `copy` (an extension)."""
 
 ALL: Final = (
     NOTICES,
@@ -61,6 +63,7 @@ ALL: Final = (
     DECLARED_TYPES,
     PARAMETER_MODES,
     DEBUGGER,
+    COLUMNS,
 )
 """Every capability of version 1, in the order Ready grants them."""
 

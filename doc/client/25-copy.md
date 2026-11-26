@@ -35,8 +35,14 @@ SourceError(position, message): .where, .reason
 
 **Copy.** `copy_in` begins a copy into `table`, as SQL names it, of
 `columns`, in order, all of the table's if none; it needs `copy`. `send`
-sends a row, the rows waiting going in one CopyData once they are
-`CHUNK_BYTES`, 256 KiB, with no reply; `finish` sends the rest and ends
+sends a row, the rows waiting going in one message once they are
+`CHUNK_BYTES`, 256 KiB, with no reply: by row, in a CopyData; or, where
+the server grants `columns`, a row of strings and None alone by
+column, in a CopyColumns, each string a cell's text, which the server
+casts to its column as it casts a character string a CopyData carries,
+so a cell too long fails rather than being cut. A copy mixes the two as
+its rows come, in the order sent, and an import by copy, whose values
+are its fields' text, goes by column; `finish` sends the rest and ends
 the copy, giving the rows inserted; `abandon` gives it up, every row
 undone. `ping` pings the server during the copy. A copy is all or
 nothing: a row the server refuses fails `finish`, its failure's detail

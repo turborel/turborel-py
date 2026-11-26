@@ -1,6 +1,6 @@
 """Tests against Turborel's sample frames, `doc/client/05-protocol-frames.tsv`.
 
-The file is copied into `samples/` at Turborel's main commit 5863fe65,
+The file is copied into `samples/` at Turborel's main commit 45cb0d7f,
 as RULES.md D15 says, so the tests read what they read at that commit
 whatever the machine holds.
 """
@@ -74,7 +74,7 @@ def test_every_line_is_read_as_the_page_lays_it_out() -> None:
     protocol has or `-`, the whole frame its header too, and a meaning;
     each frame's length is its body's.
     """
-    assert len(SAMPLES) == 166
+    assert len(SAMPLES) == 167
     names = [s.name for s in SAMPLES]
     assert len(set(names)) == len(names)
     for s in SAMPLES:

@@ -221,8 +221,9 @@ def test_a_copy_and_its_end(conn: Connection) -> None:
     """Verifies: [CLIENT Copying and exporting] copy into a table, many rows a message.
 
     [PROTOCOL CopyEnd 'N'] answered by a Complete counting the rows
-    inserted; [PROTOCOL CopyIn 'I'] until CopyEnd only CopyData, CopyEnd
-    and Ping sent, any other request refused before it is sent; [PROTOCOL
+    inserted; [PROTOCOL CopyIn 'I'] until CopyEnd only CopyData,
+    CopyColumns, CopyEnd and Ping sent, any other request refused before
+    it is sent; [PROTOCOL
     Ping 'G'] answered during a copy too; [PROTOCOL Conversations] a
     copy; the rows an iterator gives.
     """
@@ -383,3 +384,40 @@ def test_an_import_s_failures(conn: Connection) -> None:
     conn.query("ROLLBACK")
     with pytest.raises(ImportFailure, match="is not a <table name>"):
         import_rows(conn, Delimited(io.BytesIO(b"9,x\n")), Import("no such"))
+
+
+def test_a_copy_by_column(conn: Connection) -> None:
+    """Verifies: [PROTOCOL CopyColumns 'O'] rows by column, granted `columns`.
+
+    [CLIENT Copying and exporting] rows of text sent by column: a null and
+    the empty string kept apart; CopyData and CopyColumns mixed in one
+    copy; a cell too long for its column failing the copy at CopyEnd, its
+    row named in the detail, never cut; an abandoned copy taking nothing.
+    """
+    assert "columns" in conn.granted
+    conn.query("CREATE TABLE CELLS (N INTEGER, S VARCHAR(3))")
+    conn.query("COMMIT")
+    with conn.copy_in("CELLS") as copy:
+        copy.send(("1", None))
+        copy.send(("2", ""))
+        copy.send((3, "abc"))
+        copy.send(("4", "d"))
+        assert copy.finish() == 4
+    stored = rows_of(conn.query("SELECT N, S FROM CELLS ORDER BY N"))
+    assert stored == [(1, None), (2, ""), (3, "abc"), (4, "d")]
+    conn.query("COMMIT")
+    with conn.copy_in("CELLS") as copy:
+        copy.send(("5", "e"))
+        copy.send(("6", "toolong"))
+        with pytest.raises(DataError) as long:
+            copy.finish()
+    assert long.value.sqlstate == "22001"
+    assert long.value.failure is not None
+    assert long.value.failure.diagnostics is not None
+    assert "2" in (long.value.failure.diagnostics.detail or "")
+    conn.query("ROLLBACK")
+    with conn.copy_in("CELLS") as copy:
+        copy.send(("7", "g"))
+        copy.abandon()
+    assert rows_of(conn.query("SELECT COUNT(*) FROM CELLS")) == [(4,)]
+    conn.query("ROLLBACK")

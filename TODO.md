@@ -50,4 +50,4 @@ manual was checked again against the code, every example run.
 
 Nothing is open: every row M8 names is done, the sample frames among
 them, each decoded or encoded as the file says at Turborel's main commit
-5863fe65.
+45cb0d7f.

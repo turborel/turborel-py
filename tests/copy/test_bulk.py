@@ -217,3 +217,36 @@ def test_an_abandon_answered_by_an_error() -> None:
         with pytest.raises(InternalError):
             copy.abandon()
         assert not conn.is_lost
+
+
+def test_rows_of_text_go_by_column_where_granted() -> None:
+    """Verifies: [CLIENT Copying and exporting] by column with `columns`, else by row.
+
+    [PROTOCOL CopyColumns 'O'] a row of strings and None alone goes in a
+    CopyColumns, each string a cell's text; another row, or one of
+    another width, in a CopyData, the rows in the order sent, CopyData
+    and CopyColumns mixed in one copy. Not granted, every row by row.
+    """
+    with Peer() as peer:
+        conn = opened(peer, "copy", "columns")
+        peer.reply(complete())
+        with conn.copy_in("T") as copy:
+            copy.send(("1", None))
+            copy.send(("", "b"))
+            copy.send((3, "c"))
+            copy.send(("4",))
+            assert copy.finish() == 0
+        kinds = [peer.received() for _ in range(5)]
+    assert [k for k, _ in kinds] == [COPY_IN, ord("O"), COPY_DATA, ord("O"), COPY_END]
+    assert kinds[1][1] == (
+        u32(2) + u32(2)
+        + u32(1) + b"\x00" + u32(2) + u32(1) + u32(1) + u32(1) + b"1"
+        + u32(1) + b"\x01" + u32(2) + u32(0) + u32(1) + u32(1) + b"b"
+    )  # fmt: skip
+    with Peer() as peer:
+        conn = opened(peer, "copy")
+        peer.reply(complete())
+        with conn.copy_in("T") as copy:
+            copy.send(("1", None))
+            copy.finish()
+        assert [peer.received()[0] for _ in range(3)] == [COPY_IN, COPY_DATA, COPY_END]

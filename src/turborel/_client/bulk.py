@@ -15,6 +15,7 @@ from turborel._copy import copying
 from turborel._copy.exporting import ExportFormat, Writer
 from turborel._errors import connection_failure, misuse
 from turborel._session import ops
+from turborel._session.capabilities import COLUMNS
 from turborel._session.runner import run
 
 if TYPE_CHECKING:
@@ -110,6 +111,9 @@ class Copying:
         """A copy begun over `connection`."""
         self._connection = connection
         self._waiting: list[bytes] = []
+        self._texts: list[Sequence[str | None]] = []
+        """Rows of text cells waiting to go by column, with `columns`."""
+        self._by_column = COLUMNS in connection.granted
         self._octets = 0
         self._ended = False
 
@@ -130,15 +134,40 @@ class Copying:
     def send(self, row: Sequence[object]) -> None:
         """Send `row`, with those before it once they are 256 KiB.
 
+        With `columns` granted, a row of strings and None alone goes by
+        column, in a CopyColumns, each string a cell's text, which the
+        server takes as CopyData takes a character string; any other row
+        goes by row, in a CopyData. The rows go in the order sent.
+
         Raises:
             Error: A value that cannot be sent; the connection's. A row the
                 server refuses comes as `finish`'s failure.
         """
+        if self._texts_take(row):
+            return
+        self._flush_texts()
         encoded = requests.encoded_row(row)
         self._waiting.append(encoded)
         self._octets += len(encoded)
         if self._octets >= copying.CHUNK_BYTES:
             self._flush()
+
+    def _texts_take(self, row: Sequence[object]) -> bool:
+        """Whether `row` waits to go by column: text alone, as wide as those waiting."""
+        texts = (
+            self._by_column
+            and bool(row)
+            and all(v is None or isinstance(v, str) for v in row)
+        )
+        if not texts or (self._texts and len(self._texts[0]) != len(row)):
+            return False
+        self._flush_rows()
+        cells: list[str | None] = list(row)  # type: ignore[arg-type]  # Checked above.
+        self._texts.append(cells)
+        self._octets += sum(len(c) + 4 for c in cells if c is not None)
+        if self._octets >= copying.CHUNK_BYTES:
+            self._flush_texts()
+        return True
 
     def ping(self) -> None:
         """Ping the server during the copy [PROTOCOL Ping 'G'].
@@ -175,9 +204,19 @@ class Copying:
         return self._ended
 
     def _flush(self) -> None:
+        self._flush_rows()
+        self._flush_texts()
+
+    def _flush_rows(self) -> None:
         if self._waiting:
             rows, self._waiting, self._octets = self._waiting, [], 0
             self._connection._run_copying(copying.data(rows))  # noqa: SLF001
+
+    def _flush_texts(self) -> None:
+        if self._texts:
+            rows, self._texts, self._octets = self._texts, [], 0
+            sent = copying.by_column(rows, len(rows[0]))
+            self._connection._run_copying(sent)  # noqa: SLF001
 
     def _end(self, *, abandon: bool) -> int:
         self._ended = True

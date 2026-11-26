@@ -11,7 +11,8 @@ uses the low-level client, `turborel.client`.
 
 `copy_in(table, columns)` begins a copy into the table, as SQL names it,
 of the columns named, in that order, or all of them. `send` sends a row,
-many rows going in one message; `finish` ends the copy and gives the
+many rows going in one message, and rows of text by column where the
+server grants `columns`; `finish` ends the copy and gives the
 rows inserted. `copy_rows` does all three for the rows an iterator
 gives.
 

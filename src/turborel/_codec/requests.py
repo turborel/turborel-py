@@ -43,6 +43,7 @@ CHANGE_USER: Final = ord("U")
 COPY_IN: Final = ord("I")
 COPY_DATA: Final = ord("J")
 COPY_END: Final = ord("N")
+COPY_COLUMNS: Final = ord("O")
 
 # Lob's ops [PROTOCOL Lob 'L'], the request.
 LOB_READ: Final = 0
@@ -416,6 +417,43 @@ def copy_data(rows: Sequence[bytes]) -> bytes:
     for row in rows:
         w.raw(row)
     return _framed(COPY_DATA, w)
+
+
+@dataclass(frozen=True, slots=True)
+class CopyColumns:
+    """Rows of the copy under way by column, as text [PROTOCOL CopyColumns 'O'].
+
+    Each row holds a cell for each of the copy's columns: its text, as a
+    field of a file holds it, or None of a null. A cell is taken as the
+    character string of its text would be in CopyData.
+    """
+
+    rows: Sequence[Sequence[str | None]]
+    width: int
+    """The copy's columns, at least one where there are rows."""
+
+    def encode(self) -> bytes:
+        """Its frame: rows, then of each column its null bits, its ends, its text."""
+        w = Writer()
+        w.u32(len(self.rows))
+        w.u32(self.width)
+        for column in range(self.width):
+            nulls = bytearray((len(self.rows) + 7) // 8)
+            ends: list[int] = []
+            text = bytearray()
+            for n, row in enumerate(self.rows):
+                cell = row[column]
+                if cell is None:
+                    nulls[n // 8] |= 1 << (n % 8)
+                else:
+                    text += cell.encode("utf-8")
+                ends.append(len(text))
+            w.octets(bytes(nulls))
+            w.u32(len(ends))
+            for end in ends:
+                w.u32(end)
+            w.octets(bytes(text))
+        return _framed(COPY_COLUMNS, w)
 
 
 @dataclass(frozen=True, slots=True)

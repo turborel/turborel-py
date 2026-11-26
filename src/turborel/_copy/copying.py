@@ -2,9 +2,10 @@
 
 [PROTOCOL CopyIn 'I'] begins a copy, naming the table and its columns;
 [PROTOCOL CopyData 'J'] sends rows, many to a message, each with no
-reply; [PROTOCOL CopyEnd 'N'] ends it, its reply the rows inserted or
+reply, or with `columns` [PROTOCOL CopyColumns 'O'] rows of text by
+column; [PROTOCOL CopyEnd 'N'] ends it, its reply the rows inserted or
 the copy's failure, every row of it undone. Until CopyEnd only CopyData,
-CopyEnd and Ping are sent. The server assigns each value to its column
+CopyColumns, CopyEnd and Ping are sent. The server assigns each value to its column
 as INSERT does, so a string too long for its column is refused, not cut.
 """
 
@@ -40,6 +41,11 @@ def begin(
 def data(rows: Sequence[bytes]) -> Steps[None]:
     """Rows sent, each as `encoded_row` gave it; no reply."""
     yield Send(requests.copy_data(rows))
+
+
+def by_column(rows: Sequence[Sequence[str | None]], width: int) -> Steps[None]:
+    """Rows of text cells sent by column, in a CopyColumns; no reply."""
+    yield Send(requests.CopyColumns(rows, width).encode())
 
 
 def end(session: Session, *, abandon: bool) -> Steps[int]:

@@ -70,6 +70,7 @@ REQUESTS: Final[dict[str, Callable[[], bytes]]] = {
     "copy-in-every-column": lambda: q.CopyIn("T").encode(),
     # Its values are character strings, as a copy of text sends them.
     "copy-data": lambda: q.CopyData((("1", None), ("2", "b"))).encode(),
+    "copy-columns": lambda: q.CopyColumns((("1", "b"), (None, "")), 2).encode(),
     "copy-end": lambda: q.CopyEnd().encode(),
     "copy-end-abandon": lambda: q.CopyEnd(abandon=True).encode(),
     "query-compressed": lambda: q.Query(BIG, ends=True).encode(),
